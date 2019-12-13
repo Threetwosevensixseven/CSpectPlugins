@@ -16,17 +16,15 @@ namespace UARTLogger
 
         public iCSpect CSpect;
         public Settings Settings;
+        public UARTBuffer Buffer;
         public bool UART_RX_Internal;
-        public Queue<byte> LoggedQueue;
-        public UARTStates CurrentState;
 
         public List<sIO> Init(iCSpect _CSpect)
         {
             // Initialise and load plugin settings
             CSpect = _CSpect;
             Settings = Settings.Load();
-            LoggedQueue = new Queue<byte>();
-            CurrentState = UARTStates.ReadingESP;
+            Buffer = new UARTBuffer(Settings);
 
             // Read current setting of UART control
             byte b = CSpect.InPort(PORT_UART_CONTROL);
@@ -46,6 +44,7 @@ namespace UARTLogger
 
         public void Quit()
         {
+            Buffer.Dispose();
         }
 
         public bool Write(eAccess _type, int _port, byte _value)
@@ -53,21 +52,15 @@ namespace UARTLogger
             switch (_port)
             {
                 case PORT_UART_CONTROL:
+                    var target = (_value & 64) == 0 ? UARTTargets.ESP : UARTTargets.Pi;
+                    Buffer.ChangeUARTType(target);
+                    //Debug.WriteLine("Switched UART to " + target.ToString());
                     // We are transparently logging without handling the write, so return false
-                    bool isESP = (_value & 64) == 0;
-                    if (isESP && CurrentState == UARTStates.ReadingPi)
-                        CurrentState = UARTStates.ReadingESP;
-                    else if (isESP && CurrentState == UARTStates.WritingPi)
-                        CurrentState = UARTStates.WritingESP;
-                    else if (!isESP && CurrentState == UARTStates.ReadingESP)
-                        CurrentState = UARTStates.ReadingPi;
-                    else if (!isESP && CurrentState == UARTStates.WritingESP)
-                        CurrentState = UARTStates.WritingPi;
-                    Debug.WriteLine("Switched UART to " + CurrentState.ToString());
-                    return false; // False means we're transparently logged it without handling it
+                    return false;
                 case PORT_UART_TX:
                     // We are transparently logging without handling the write, so return false
-                    Debug.WriteLine("TX: " + _value.ToString("X2"));
+                    Buffer.Log(_value, UARTStates.Writing);
+                    //Debug.WriteLine("TX: " + _value.ToString("X2"));
                     return false;
             }
             // Don't handle any writes we didn't register for
@@ -91,8 +84,9 @@ namespace UARTLogger
                     // then read the actual value, then handle the callback with the read value.
                     UART_RX_Internal = true;
                     byte val = CSpect.InPort(PORT_UART_RX);
+                    Buffer.Log(val, UARTStates.Reading);
                     UART_RX_Internal = false;
-                    Debug.WriteLine("RX: " + val.ToString("X2"));
+                    //Debug.WriteLine("RX: " + val.ToString("X2"));
                     _isvalid = true;
                     return val;
             }

@@ -8,9 +8,7 @@ namespace UARTLogger
 {
     public enum UARTStates
     {
-        ReadingESP,
-        WritingESP,
-        ReadingPi,
-        WritingPi
+        Reading,
+        Writing
     }
 }

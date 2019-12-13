@@ -44,10 +44,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Settings.cs" />
+    <Compile Include="SpectrumCharset.cs" />
+    <Compile Include="UARTBuffer.cs" />
     <Compile Include="UARTLogger_Device.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UARTStates.cs" />
-    <Compile Include="UARTTypes.cs" />
+    <Compile Include="UARTTargets.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
