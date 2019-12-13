@@ -3,7 +3,7 @@ Various plugins for CSpect, an emulator for the [ZX Spectrum](https://en.wikiped
 
 ## Plugins
 ### UARTLogger
-A configurable logger for the ZX Spectrum Next ESP and Pi UARTs emulated by CSpect.
+A configurable logger for the Next ESP and Pi UARTs emulated by CSpect.
 
 ### i2C_Sample
 The sample plugin included with CSpect.
