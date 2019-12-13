@@ -12,7 +12,7 @@ The sample plugin included with CSpect.
 [CSpect](http://www.cspect.org/) is a ZXSpectrum emulator by Mike Dailly. 
 
 ## Copyright and Licence
-All plugins are Copyright © 2019 Robin Verhagen-Guest, and are licensed under [Apache 2.0](https://github.com/Threetwosevensixseven/CSpectPlugins/blob/master/LICENSE).
+All plugins are copyright © 2019 Robin Verhagen-Guest, and are licensed under [Apache 2.0](https://github.com/Threetwosevensixseven/CSpectPlugins/blob/master/LICENSE).
 
 CSpect is copyright © 1998-2019 Mike Dailly All rights reserved.
 
