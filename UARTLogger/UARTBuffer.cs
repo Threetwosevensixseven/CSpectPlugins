@@ -62,6 +62,7 @@ namespace UARTLogger
                 string plural = buffer.Count == 1 ? "" : "s";
                 var now = DateTime.Now;
                 var sb = new StringBuilder();
+                sb.AppendLine();
                 sb.Append("[");
                 sb.Append(now.ToShortDateString());
                 sb.Append(" ");
@@ -91,7 +92,7 @@ namespace UARTLogger
                     hex += b.ToString("x2") + " ";
                     asc += SpectrumCharset.ToASCII(b);
                     rowCount++;
-                    if (rowCount > 16 || buffer.Count == 0)
+                    if (rowCount >= 16 || buffer.Count == 0)
                     {
                         sb.Append(hex.PadRight(54));
                         sb.Append(asc);
