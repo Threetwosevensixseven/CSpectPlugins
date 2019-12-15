@@ -5,7 +5,7 @@ Download the latest release [here](https://github.com/Threetwosevensixseven/CSpe
 
 ## Plugins
 ### UARTLogger
-A configurable logger for the Next ESP and Pi UARTs emulated by CSpect.
+A configurable logger for the Next ESP and Pi UARTs emulated by CSpect. See its [wiki page](https://github.com/Threetwosevensixseven/CSpectPlugins/wiki/UART-Logger) for installation and configuration details.
 
 ### i2C_Sample
 The sample plugin included with CSpect.
