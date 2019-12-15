@@ -1,7 +1,7 @@
 # CSpectPlugins
 Various plugins for [CSpect](http://www.cspect.org/), an emulator for the [ZX Spectrum](https://en.wikipedia.org/wiki/ZX_Spectrum) and [ZX Spectrum Next](https://www.specnext.com/about/)™.
 
-DOwnload the latest release [here](https://github.com/Threetwosevensixseven/CSpectPlugins/releases/latest)
+Download the latest release [here](https://github.com/Threetwosevensixseven/CSpectPlugins/releases/latest).
 
 ## Plugins
 ### UARTLogger
