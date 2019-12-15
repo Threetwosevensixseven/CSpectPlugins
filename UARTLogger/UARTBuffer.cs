@@ -16,6 +16,8 @@ namespace UARTLogger
         private UARTTargets target;
         private object sync;
         private Timer timer;
+        private FileLogger espLogger;
+        private FileLogger piLogger;
 
         public UARTBuffer(Settings Settings)
         {
@@ -24,7 +26,9 @@ namespace UARTLogger
             state = UARTStates.Reading;
             target = UARTTargets.ESP;
             sync = new object();
-            timer = new Timer(timerElapsed, this, settings.FlushLogsAfterSecs * 1000, Timeout.Infinite);      
+            timer = new Timer(timerElapsed, this, settings.FlushLogsAfterSecs * 1000, Timeout.Infinite);
+            espLogger = new FileLogger(Settings, UARTTargets.ESP);
+            piLogger = new FileLogger(Settings, UARTTargets.Pi);
         }
 
         public void Log(byte Value, UARTStates NewState)
@@ -111,7 +115,11 @@ namespace UARTLogger
                     }
 
                     // Log result
-                    Debug.Write(sb.ToString());
+                    var text = sb.ToString();
+                    if (target == UARTTargets.ESP)
+                        espLogger.Write(text);
+                    else if (target == UARTTargets.Pi)
+                        piLogger.Write(text);
                 }
             }
         }
@@ -134,6 +142,8 @@ namespace UARTLogger
                 {
                     // Dispose managed state (managed objects).
                     Flush();
+                    espLogger.Dispose();
+                    piLogger.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
