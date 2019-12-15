@@ -12,15 +12,18 @@ namespace UARTLogger
 {
     public class Settings
     {
+        private const int FLUSH_DEFAULT = 2;
         public bool EnableESPLogging { get; set; }
         public bool EnablePiLogging { get; set; }
         public bool TruncateLogsOnStartup { get; set; }
         public string ESPLogFile { get; set; }
         public string PiLogFile { get; set; }
+        public int FlushLogsAfterSecs { get; set; }
 
         public Settings()
         {
             ESPLogFile = PiLogFile = string.Empty;
+            FlushLogsAfterSecs = FLUSH_DEFAULT;
         }
 
         public string ToXML()
@@ -59,6 +62,8 @@ namespace UARTLogger
             {
                 settings = new Settings();
             }
+            if (settings.FlushLogsAfterSecs <= 0)
+                settings.FlushLogsAfterSecs = FLUSH_DEFAULT;
             return settings;
         }
 

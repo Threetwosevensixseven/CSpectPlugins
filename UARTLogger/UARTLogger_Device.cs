@@ -26,11 +26,6 @@ namespace UARTLogger
             Settings = Settings.Load();
             Buffer = new UARTBuffer(Settings);
 
-            // Read current setting of UART control
-            byte b = CSpect.InPort(PORT_UART_CONTROL);
-            // Returns 255 on first read, so assume we start off as ESP
-            //CurrentUARTType = (_value & 64) == 0 ? UARTTypes.ESP : UARTTypes.Pi;
-
             // create a list of the ports we're interested in, but only if we're logging
             List<sIO> ports = new List<sIO>();
             if (Settings.EnableESPLogging || Settings.EnableESPLogging)

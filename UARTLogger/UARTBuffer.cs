@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace UARTLogger
@@ -13,6 +14,8 @@ namespace UARTLogger
         private Queue<byte> buffer;
         private UARTStates state;
         private UARTTargets target;
+        private object sync;
+        private Timer timer;
 
         public UARTBuffer(Settings Settings)
         {
@@ -20,10 +23,13 @@ namespace UARTLogger
             buffer = new Queue<byte>();
             state = UARTStates.Reading;
             target = UARTTargets.ESP;
+            sync = new object();
+            timer = new Timer(timerElapsed, this, settings.FlushLogsAfterSecs * 1000, Timeout.Infinite);      
         }
 
         public void Log(byte Value, UARTStates NewState)
         {
+            timer.Change(settings.FlushLogsAfterSecs * 1000, Timeout.Infinite);
             if (state != NewState)
             {
                 Flush();
@@ -34,6 +40,7 @@ namespace UARTLogger
 
         public void ChangeUARTType(UARTTargets NewTarget)
         {
+            timer.Change(settings.FlushLogsAfterSecs * 1000, Timeout.Infinite);
             if (NewTarget != target)
             {
                 Flush();
@@ -43,67 +50,76 @@ namespace UARTLogger
 
         private void Flush()
         {
-            if (!settings.EnableESPLogging && target == UARTTargets.ESP)
+            lock (sync)
             {
-                buffer = new Queue<byte>();
-                return;
-            }
-            else if (!settings.EnablePiLogging && target == UARTTargets.Pi)
-            {
-                buffer = new Queue<byte>();
-                return;
-            }
-
-            if (buffer.Count > 0)
-            {
-                // Write header
-                string action = state == UARTStates.Reading ? "Read " : "Written ";
-                string prep = state == UARTStates.Reading ? "from " : "to ";
-                string plural = buffer.Count == 1 ? "" : "s";
-                var now = DateTime.Now;
-                var sb = new StringBuilder();
-                sb.AppendLine();
-                sb.Append("[");
-                sb.Append(now.ToShortDateString());
-                sb.Append(" ");
-                sb.Append(now.ToLongTimeString());
-                sb.Append("] ");
-                sb.Append(action);
-                sb.Append(buffer.Count);
-                sb.Append(" byte");
-                sb.Append(plural);
-                sb.Append(" ");
-                sb.Append(prep);
-                sb.Append(target.ToString());
-                sb.AppendLine(":");
-
-                // Write data rows
-                int rowCount = 0;
-                string hex = "";
-                string asc = "";
-                while(buffer.Count > 0)
+                if (!settings.EnableESPLogging && target == UARTTargets.ESP)
                 {
-                    if (rowCount == 0)
-                    {
-                        hex = "    ";
-                        asc = "";
-                    }
-                    byte b = buffer.Dequeue();
-                    hex += b.ToString("x2") + " ";
-                    asc += SpectrumCharset.ToASCII(b);
-                    rowCount++;
-                    if (rowCount >= 16 || buffer.Count == 0)
-                    {
-                        sb.Append(hex.PadRight(54));
-                        sb.Append(asc);
-                        sb.AppendLine();
-                        rowCount = 0;
-                    }
+                    buffer = new Queue<byte>();
+                    return;
+                }
+                else if (!settings.EnablePiLogging && target == UARTTargets.Pi)
+                {
+                    buffer = new Queue<byte>();
+                    return;
                 }
 
-                // Log result
-                Debug.Write(sb.ToString());
+                if (buffer.Count > 0)
+                {
+                    // Write header
+                    string action = state == UARTStates.Reading ? "Read " : "Written ";
+                    string prep = state == UARTStates.Reading ? "from " : "to ";
+                    string plural = buffer.Count == 1 ? "" : "s";
+                    var now = DateTime.Now;
+                    var sb = new StringBuilder();
+                    sb.AppendLine();
+                    sb.Append("[");
+                    sb.Append(now.ToShortDateString());
+                    sb.Append(" ");
+                    sb.Append(now.ToLongTimeString());
+                    sb.Append("] ");
+                    sb.Append(action);
+                    sb.Append(buffer.Count);
+                    sb.Append(" byte");
+                    sb.Append(plural);
+                    sb.Append(" ");
+                    sb.Append(prep);
+                    sb.Append(target.ToString());
+                    sb.AppendLine(":");
+
+                    // Write data rows
+                    int rowCount = 0;
+                    string hex = "";
+                    string asc = "";
+                    while (buffer.Count > 0)
+                    {
+                        if (rowCount == 0)
+                        {
+                            hex = "    ";
+                            asc = "";
+                        }
+                        byte b = buffer.Dequeue();
+                        hex += b.ToString("x2") + " ";
+                        asc += SpectrumCharset.ToASCII(b);
+                        rowCount++;
+                        if (rowCount >= 16 || buffer.Count == 0)
+                        {
+                            sb.Append(hex.PadRight(54));
+                            sb.Append(asc);
+                            sb.AppendLine();
+                            rowCount = 0;
+                        }
+                    }
+
+                    // Log result
+                    Debug.Write(sb.ToString());
+                }
             }
+        }
+
+        private void timerElapsed(object Buffer)
+        {
+            if (Buffer is UARTBuffer)
+                ((UARTBuffer)Buffer).Flush();
         }
 
         #region IDisposable
