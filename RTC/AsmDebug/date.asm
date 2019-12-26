@@ -477,7 +477,7 @@ SEND_ACK_NACK:
                         ret                             ;
 
 
-START_SEQUENCE:         
+START_SEQUENCE:
 
         ; high in both i2c pins, before begin
                         ld a,1                          ;
@@ -490,7 +490,7 @@ START_SEQUENCE:
 
         ; low the clock to start sending data
                         CALL SCL                        ;
-
+CSBreak()
                         ret                             ;
 
 SDA0:                   
@@ -502,7 +502,6 @@ SDA1:
 
 SDA:                    
                         ld b,PORT_DATA                  ;
-                        //CSBreak()
                         OUT (c), a                      ;
                         ret                             ;
 
@@ -513,7 +512,6 @@ SCL1:
                         ld a,1                          ;
 SCL:                    
                         ld b,PORT_CLOCK                 ;
-                        //CSBreak()
                         OUT (c), a                      ;
                         ret                             ;
 

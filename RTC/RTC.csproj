@@ -44,12 +44,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="I2CActions.cs" />
-    <Compile Include="I2CMaster.cs" />
-    <Compile Include="I2CLines.cs" />
-    <Compile Include="I2CStates.cs" />
-    <Compile Include="RTC_Device.cs" />
+    <Compile Include="I2C\I2CActions.cs" />
+    <Compile Include="I2C\I2CMaster.cs" />
+    <Compile Include="I2C\I2CLines.cs" />
+    <Compile Include="I2C\I2CStates.cs" />
+    <Compile Include="Plugin\Logger.cs" />
+    <Compile Include="Plugin\LogLevels.cs" />
+    <Compile Include="Plugin\RTC_Device.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Clock\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
