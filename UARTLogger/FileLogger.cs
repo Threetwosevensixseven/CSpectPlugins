@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UARTLogger
+namespace Plugins.UARTLogger
 {
     public class FileLogger : IDisposable
     {
@@ -41,8 +41,16 @@ namespace UARTLogger
                 if (disposing)
                 {
                     // Dispose managed state (managed objects).
-                    fileWriter.Dispose();
-                    fileStream.Dispose();
+                    if (fileWriter != null)
+                    {
+                        fileWriter.Dispose();
+                        fileWriter = null;
+                    }
+                    if (fileStream != null)
+                    {
+                        fileStream.Dispose();
+                        fileStream = null;
+                    }
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.

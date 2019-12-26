@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace UARTLogger
+namespace Plugins.UARTLogger
 {
     public class Settings
     {
@@ -58,7 +58,7 @@ namespace UARTLogger
                     reader.Close();
                 }
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
                 settings = new Settings();
             }
@@ -75,7 +75,7 @@ namespace UARTLogger
                 File.WriteAllText(fn, ToXML());
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
                 return false;
             }

@@ -6,18 +6,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Plugin;
 
-namespace UARTLogger
+namespace Plugins.UARTLogger
 {
     public class UARTLogger_Device : iPlugin
     {
-        public const ushort PORT_UART_TX = 0x133b;
-        public const ushort PORT_UART_RX = 0x143b;
-        public const ushort PORT_UART_CONTROL = 0x153b;
+        private const ushort PORT_UART_TX = 0x133b;
+        private const ushort PORT_UART_RX = 0x143b;
+        private const ushort PORT_UART_CONTROL = 0x153b;
 
-        public iCSpect CSpect;
-        public Settings Settings;
-        public UARTBuffer Buffer;
-        public bool UART_RX_Internal;
+        private iCSpect CSpect;
+        private Settings Settings;
+        private UARTBuffer Buffer;
+        private bool UART_RX_Internal;
 
         public List<sIO> Init(iCSpect _CSpect)
         {
@@ -39,7 +39,11 @@ namespace UARTLogger
 
         public void Quit()
         {
-            Buffer.Dispose();
+            if (Buffer != null)
+            {
+                Buffer.Dispose();
+                Buffer = null;
+            }
         }
 
         public bool Write(eAccess _type, int _port, byte _value)

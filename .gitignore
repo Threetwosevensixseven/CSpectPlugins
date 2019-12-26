@@ -1,7 +1,7 @@
-/.vs/CSpectPlugins/v14/*.suo
-/UARTLogger/*.user
-/i2C_Sample/bin
-/UARTLogger/obj
-/i2C_Sample/bin
-/i2C_Sample/obj
+*.suo
+*.user
+bin
+obj
 /Releases
+/RTC/AsmDebug/DATE
+ZeusBak

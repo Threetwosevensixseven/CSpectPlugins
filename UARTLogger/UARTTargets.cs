@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UARTLogger
+namespace Plugins.UARTLogger
 {
     public enum UARTTargets
     {

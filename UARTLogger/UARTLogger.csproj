@@ -7,7 +7,7 @@
     <ProjectGuid>{C313FACE-83B3-4690-B3F4-C4E8254CEC3D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UARTLogger</RootNamespace>
+    <RootNamespace>Plugins.UARTLogger</RootNamespace>
     <AssemblyName>UARTLogger</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -30,8 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Plugin">
-      <HintPath>.\Plugin.dll</HintPath>
+    <Reference Include="Plugin, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Common\Plugin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

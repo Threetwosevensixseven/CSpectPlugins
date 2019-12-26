@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace UARTLogger
+namespace Plugins.UARTLogger
 {
     public class UARTBuffer : IDisposable
     {
@@ -142,8 +142,16 @@ namespace UARTLogger
                 {
                     // Dispose managed state (managed objects).
                     Flush();
-                    espLogger.Dispose();
-                    piLogger.Dispose();
+                    if (espLogger != null)
+                    {
+                        espLogger.Dispose();
+                        espLogger = null;
+                    }
+                    if (piLogger != null)
+                    {
+                        piLogger.Dispose();
+                        piLogger = null;
+                    }
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
