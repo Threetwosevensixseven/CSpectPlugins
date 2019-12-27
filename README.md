@@ -7,6 +7,9 @@ Download the latest release [here](https://github.com/Threetwosevensixseven/CSpe
 ### UARTLogger
 A configurable logger for the Next ESP and Pi UARTs emulated by CSpect. See its [wiki page](https://github.com/Threetwosevensixseven/CSpectPlugins/wiki/UART-Logger) for installation and configuration details.
 
+## RTC
+A configurable RTC provider to supply your PC's date/time over I2C to CSpect, so it works with `.date`, `.time` and `RTC.SYS`. Work in progress, coming soon!
+
 ### i2C_Sample
 The sample plugin included with CSpect.
 
