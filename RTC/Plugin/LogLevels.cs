@@ -11,7 +11,8 @@ namespace Plugins.RTC.Plugin
         I2CRaw = 0,
         I2CSequence = 1,
         I2CState = 2,
-        RTCAction = 3,
+        RTCAccess = 3,
+        RTCCommand = 4,
         All = int.MinValue
     }
 }

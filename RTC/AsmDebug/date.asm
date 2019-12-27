@@ -146,9 +146,11 @@ MAIN:
                         call SEND_DATA                  ;
 
         ; STOP_SEQUENCE
+
                         CALL SDA0                       ;
                         CALL SCL1                       ;
                         CALL SDA1                       ;
+//CSBreak()
 
         ; ---------------------------------------------------
         ; Talk to DS1307
@@ -391,7 +393,7 @@ PREPARE_AND_MULT:
 
                         ret                             ;
 
-SEND_DATA:              
+SEND_DATA:
         ; 8 bits
                         ld h,8                          ;
 SEND_DATA_LOOP:         
@@ -412,7 +414,6 @@ WAIT_ACK:
         ; free the line to wait for the ACK
                         CALL SDA1                       ;
                         call PULSE_CLOCK                ;
-
                         ret                             ;
 
 READ:                   
@@ -490,7 +491,6 @@ START_SEQUENCE:
 
         ; low the clock to start sending data
                         CALL SCL                        ;
-CSBreak()
                         ret                             ;
 
 SDA0:                   
@@ -500,7 +500,7 @@ SDA0:
 SDA1:                   
                         ld a,1                          ;
 
-SDA:                    
+SDA:
                         ld b,PORT_DATA                  ;
                         OUT (c), a                      ;
                         ret                             ;

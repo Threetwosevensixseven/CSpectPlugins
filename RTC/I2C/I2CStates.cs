@@ -8,8 +8,10 @@ namespace Plugins.RTC.I2C
 {
     public enum I2CStates
     {
-        Unknown,
+        Stopped,
+        Stopping,
+        Started,
         Starting,
-        Started
+        ReceivingByte,
     }
 }
