@@ -10,11 +10,13 @@ namespace Plugins.RTC.Plugin
     public class Logger
     {
         public const int INDENT = 2;
-        public LogLevels LogThisLevelOrHigher { get; private set; }
+        public LogLevels MinLevel { get; private set; }
+        public LogLevels? MaxLevel { get; private set; }
 
-        public Logger(LogLevels LogThisLevelOrHigher)
+        public Logger(LogLevels MinLevel, LogLevels? MaxLevel = null)
         {
-            this.LogThisLevelOrHigher = LogThisLevelOrHigher;
+            this.MinLevel = MinLevel;
+            this.MaxLevel = MaxLevel;
         }
     }
 
@@ -25,7 +27,7 @@ namespace Plugins.RTC.Plugin
         {
             if (This == null)
                 return;
-            if (LogLevel >= This.LogThisLevelOrHigher)
+            if (LogLevel >= This.MinLevel && (This.MaxLevel == null || LogLevel <= This.MaxLevel))
                 Debug.WriteLine(new string(' ', (int)LogLevel * Logger.INDENT) + (Text ?? ""));
         }
     }

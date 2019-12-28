@@ -18,7 +18,7 @@ namespace Plugins.RTC.Plugin
         public List<sIO> Init(iCSpect _CSpect)
         {
             CSpect = _CSpect;
-            debug = new Logger(LogLevels.RTCAccess);
+            debug = new Logger(LogLevels.I2CRaw, LogLevels.I2CState);
             i2c = new I2CMaster(debug);
             var ports = new List<sIO>();
             ports.Add(new sIO((int)I2CLines.SCL, eAccess.Port_Read));
