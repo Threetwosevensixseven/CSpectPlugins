@@ -44,12 +44,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Clock\DS1307Device.cs" />
-    <Compile Include="Clock\RTCActions.cs" />
-    <Compile Include="I2C\I2CActions.cs" />
-    <Compile Include="I2C\I2CDevice.cs" />
-    <Compile Include="I2C\I2CLines.cs" />
-    <Compile Include="I2C\I2CStates.cs" />
+    <Compile Include="Slave\DS1307Device.cs" />
+    <Compile Include="Slave\RTCActions.cs" />
+    <Compile Include="Master\I2CActions.cs" />
+    <Compile Include="Master\I2CMaster.cs" />
+    <Compile Include="Master\I2CLines.cs" />
+    <Compile Include="Master\I2CStates.cs" />
     <Compile Include="Plugin\Extensions.cs" />
     <Compile Include="Plugin\Logger.cs" />
     <Compile Include="Plugin\LogLevels.cs" />

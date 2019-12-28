@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Plugin;
-using Plugins.RTC.I2C;
+using Plugins.RTC.Master;
 
 namespace Plugins.RTC.Plugin
 {
@@ -12,14 +12,14 @@ namespace Plugins.RTC.Plugin
     {
         private bool Read_Internal;
         private iCSpect CSpect;
-        private I2CDevice i2c;
+        private I2CMaster i2c;
         private Logger debug;
 
         public List<sIO> Init(iCSpect _CSpect)
         {
             CSpect = _CSpect;
             debug = new Logger(LogLevels.RTCAccess);
-            i2c = new I2CDevice(debug);
+            i2c = new I2CMaster(debug);
             var ports = new List<sIO>();
             ports.Add(new sIO((int)I2CLines.SCL, eAccess.Port_Read));
             ports.Add(new sIO((int)I2CLines.SCL, eAccess.Port_Write));
