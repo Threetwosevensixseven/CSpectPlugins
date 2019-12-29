@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>I2C.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -47,8 +50,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\CommandStates.cs" />
+    <Compile Include="Classes\DataDirection.cs" />
     <Compile Include="Classes\I2CBus.cs" />
-    <Compile Include="Classes\I2CDevice.cs" />
+    <Compile Include="Classes\II2CDevice.cs" />
     <Compile Include="Classes\I2CMaster.cs" />
     <Compile Include="Classes\I2CSlave.cs" />
     <Compile Include="Forms\frmMain.cs">
@@ -84,6 +88,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="I2C.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

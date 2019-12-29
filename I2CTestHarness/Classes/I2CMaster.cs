@@ -19,6 +19,8 @@ namespace I2CTestHarness.Classes
             logCallback = LogCallback;
             bus.Register(this);
         }
+        public byte SlaveAddress { get { return 0x00; } }
+
         public string DeviceName { get { return "I2C MASTER"; } }
 
         public bool IsMaster { get { return true; } }
@@ -29,46 +31,61 @@ namespace I2CTestHarness.Classes
                 logCallback(Text);
         }
 
-        public void Tick(bool NewSDA, bool NewSCL)
+        public void Tick(bool NewSDA, bool NewSCL, bool OldSDA, bool OldSCL)
         {
-            lastSCL = bus.SCL;
-            lastSDA = bus.SDA;
+            lastSDA = OldSDA;
+            lastSCL = OldSCL;
             LogBus(NewSDA, NewSCL);
         }
 
         private void LogBus(bool SDA, bool SCL)
         {
-            Log("SDA=" + (SDA ? "1" : "0") + ", SCL=" + (SCL ? "1" : "0"));
+            Log("    SDA=" + (SDA ? "1" : "0") + ", SCL=" + (SCL ? "1" : "0"));
         }
 
         public void CMD_START()
         {
             // A change in the state of the data line, from HIGH to LOW, while the clock is HIGH, defines a START condition.
-            Log("TX CMD_START");
-            // 1) If clock is high then take it low first to avoid triggering a STOP
-            if (bus.SCL)
-                bus.SetSCL(this, false);
-            // 2) Now we can safely take data high if it isn't already
-            if (!bus.SDA)
-                bus.SetSDA(this, true);
-            // 3) Finally take clock high and data low
+            Log("Tx CMD_START");
+            bus.SetSDA(this, true);
             bus.SetSCL(this, true);
-            bus.SetSDA(this, false);
+            bus.SetSDA(this, false); // Falling data edge should trigger slaves
+            bus.SetSCL(this, false);
         }
 
         public void CMD_STOP()
         {
-            // A change in the state of the data line, from LOW to HIGH, while the clock line is HIGH, defines a STOP condition.
-            Log("TX CMD_STOP");
-            // 1) If clock is high then take it low first to avoid triggering a START
-            if (bus.SCL)
-                bus.SetSCL(this, false);
-            // 2) Now we can safely take data low if it isn't already
-            if (bus.SDA)
-                bus.SetSDA(this, false);
-            // 3) Finally take clock high and data high
+            // STOP condition is defined by a change in the state of the data line, from LOW to HIGH, while the clock line is HIGH
+            Log("Tx CMD_STOP");
+            bus.SetSDA(this, false);
             bus.SetSCL(this, true);
+            bus.SetSDA(this, true); // Rising data edge should trigger slaves
+            //bus.SetSCL(this, false);
+        }
+
+        public bool CMD_TX(byte Byte)
+        {
+            Log("Tx CMD_TX");
+            Log("Tx byte=0x" + Byte.ToString("X2"));
+            for (int i = 0; i < 8; i++)
+            {
+                bool val = ((Byte >> (7 - i)) & 1) == 1;
+                SendBit(val, i, "data");
+            }
+            Log("Rx ACK  bit 8=0");
             bus.SetSDA(this, true);
+            bus.SetSCL(this, true);
+            bool success = bus.SDA; // Read ACK/NACK
+            bus.SetSCL(this, false);
+            return success;
+        }
+
+        private void SendBit(bool Bit, int Count, string BitType)
+        {
+            Log("Tx " + BitType.PadRight(4) + " bit " + Count + "=" + (Bit ? "1" : "0"));
+            bus.SetSDA(this, Bit);
+            bus.SetSCL(this, true);
+            bus.SetSCL(this, false); // Falling clock edge should trigger slaves
         }
     }
 }

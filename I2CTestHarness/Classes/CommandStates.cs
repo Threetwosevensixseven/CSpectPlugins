@@ -9,6 +9,7 @@ namespace I2CTestHarness.Classes
     public enum CommandStates
     {
         Stopped,
-        Started
+        Started,
+        ReceivingByte
     }
 }

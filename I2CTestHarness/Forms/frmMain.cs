@@ -13,9 +13,10 @@ namespace I2CTestHarness
 {
     public partial class frmMain : Form
     {
-        I2CBus Bus;
-        I2CMaster Master;
-        I2CSlave DS1307;
+        private I2CBus Bus;
+        private I2CMaster Master;
+        private I2CSlave DS1307;
+        private bool first;
 
         public frmMain()
         {
@@ -24,6 +25,7 @@ namespace I2CTestHarness
 
         private void frmMain_Load(object sender, EventArgs e)
         {
+            first = true;
             Bus = new I2CBus();
             Master = new I2CMaster(Bus, LogMaster);
             DS1307 = new I2CSlave(Bus, LogSlave);
@@ -43,11 +45,16 @@ namespace I2CTestHarness
         private void btnGetTime_Click(object sender, EventArgs e)
         {
             btnGetTime.Enabled = false;
-            //Bus.Start();
+            if (!first)
+            {
+                txtMaster.AppendText("--------------------------------\r\n");
+                txtSlave.AppendText( "--------------------------------\r\n");
+            }
+            first = false;
             Master.CMD_START();
-            //Master.CMD_START();
+            Master.CMD_TX(0xd0);
+            Master.CMD_START();
             Master.CMD_STOP();
-            //Master.CMD_STOP();
             btnGetTime.Enabled = true;
         }
     }

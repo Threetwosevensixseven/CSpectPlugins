@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
             this.btnGetTime = new System.Windows.Forms.Button();
             this.pnlLogs = new System.Windows.Forms.TableLayoutPanel();
             this.txtMaster = new System.Windows.Forms.TextBox();
@@ -65,7 +66,10 @@
             // 
             // txtMaster
             // 
+            this.txtMaster.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.txtMaster.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtMaster.Font = new System.Drawing.Font("Lucida Console", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtMaster.ForeColor = System.Drawing.Color.Chartreuse;
             this.txtMaster.Location = new System.Drawing.Point(3, 3);
             this.txtMaster.Multiline = true;
             this.txtMaster.Name = "txtMaster";
@@ -76,7 +80,10 @@
             // 
             // txtSlave
             // 
+            this.txtSlave.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.txtSlave.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtSlave.Font = new System.Drawing.Font("Lucida Console", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtSlave.ForeColor = System.Drawing.Color.Chartreuse;
             this.txtSlave.Location = new System.Drawing.Point(445, 3);
             this.txtSlave.Multiline = true;
             this.txtSlave.Name = "txtSlave";
@@ -92,6 +99,7 @@
             this.ClientSize = new System.Drawing.Size(909, 318);
             this.Controls.Add(this.pnlLogs);
             this.Controls.Add(this.btnGetTime);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "frmMain";
             this.Text = "I2C Test Harness";
             this.Load += new System.EventHandler(this.frmMain_Load);
