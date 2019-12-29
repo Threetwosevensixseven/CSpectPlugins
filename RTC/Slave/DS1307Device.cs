@@ -11,14 +11,22 @@ namespace Plugins.RTC.Slave
     public class DS1307Device
     {
         public const byte DEVICE_ADDRESS = 0x68;
+        public byte RegPointer { get; private set; }
 
         private Logger Logger;
         private byte[] Addresses;
 
-        public DS1307Device(Logger Logger)
+        public DS1307Device(Logger Logger, bool SetSignature = false)
         {
             this.Logger = Logger;
             Addresses = new byte[64];
+            RegPointer = 0;
+            if (SetSignature)
+            {
+                Addresses[62] = (byte)'Z';
+                Addresses[63] = (byte)'X';
+                RegPointer = 62;
+            }
         }
 
         public bool HasAddress(byte Address)
@@ -101,8 +109,12 @@ namespace Plugins.RTC.Slave
                     string count = payload.Length + payload.Length == 1 ? "byte" : "bytes";
                     Logger.Log(LogLevels.RTCCommand, "DS1307 Write " + count + " to RAM 0x" + address.ToString("x2") 
                         + ": " + payload.ToLogString() + payload.ToASCII());
+                    RegPointer = Convert.ToByte(address);
                     for (byte i = 0; i < payload.Length; i++)
+                    {
                         Addresses[address + i] = payload[i];
+                        RegPointer = Convert.ToByte((RegPointer + 1) % 64);
+                    }
                 }
                 else
                 {
@@ -135,18 +147,25 @@ namespace Plugins.RTC.Slave
             //}
         }
 
+        public byte Read()
+        {
+            return Read(RegPointer);
+        }
+
         public byte Read(byte Address)
         {
             if (Address >= 0x00 && Address <= 0x07)
             {
                 Logger.Log(LogLevels.RTCAccess, "Get DS1307 Reg 0x" + Address.ToString("x2") 
                     + " = 0x" + Addresses[Address].ToString("x2"));
+                RegPointer = Address;
                 return Addresses[Address];
             }
             else if (Address >= 0x08 && Address <= 0x3F)
             {
                 Logger.Log(LogLevels.RTCAccess, "Get DS1307 RAM 0x" + Address.ToString("x2") 
                     + " = 0x" + Addresses[Address].ToString("x2"));
+                RegPointer = Address;
                 return Addresses[Address];
             }
             else

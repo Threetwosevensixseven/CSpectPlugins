@@ -150,11 +150,11 @@ MAIN:
                         CALL SDA0                       ;
                         CALL SCL1                       ;
                         CALL SDA1                       ;
-//CSBreak()
+
 
         ; ---------------------------------------------------
         ; Talk to DS1307
-WRITE_SIG:              
+WRITE_SIG:
                         call START_SEQUENCE             ;
 
                         ld l,0xD0                       ;
@@ -178,7 +178,7 @@ WRITE_SIG:
 
         ; -------------------------------------------------
 
-label_end:              
+label_end:
         ; it´s ok, lets show the current date
                         JR READ_DATE                    ;
                         ret                             ;
@@ -188,7 +188,7 @@ label_end:
 diag_code:              call prt_hex                    ;
                         call print_newline              ;
 
-end_error:              
+end_error:
                         LD HL, MsgUsage                 ;
 
                         CALL PrintMsg                   ;
@@ -197,7 +197,7 @@ end_error:
 
 
 
-CONVERT_DIGITS:         
+CONVERT_DIGITS:
                         LD a,(HL)                       ;
         ; test ascii for 0 to 9
                         CP 48                           ;
@@ -242,7 +242,7 @@ CONVERT_DIGITS:
                         or a                            ; clear the carry
                         ret                             ;
 
-SINGLE_DIGIT:           
+SINGLE_DIGIT:
 
                         DEC HL                          ;
                         LD A,(HL)                       ;
@@ -252,14 +252,14 @@ SINGLE_DIGIT:
                         RET                             ;
 
 
-CHAR_ERROR:             
+CHAR_ERROR:
 
                         scf                             ; set the carry
                         ret                             ;
 
 
 
-READ_DATE:              
+READ_DATE:
         ; ---------------------------------------------------
         ; Talk to DS1307 and request all the regisers and 0x3e 0x3f
                         call START_SEQUENCE             ;
@@ -282,7 +282,7 @@ READ_DATE:
         ; there are 7 regs to read and 2 bytes of signature
                         LD e, 9                         ;
 
-loop_read:              
+loop_read:
                         call READ                       ;
 
         ; point to next reg
@@ -297,7 +297,7 @@ loop_read:
                         jr loop_read                    ;
 
         ; we just finished to read the I2C, send a NACK and STOP
-end_read:               
+end_read:
                         call SEND_NACK                  ;
 
         ; STOP_SEQUENCE:
@@ -349,7 +349,7 @@ end_read:
 
                         ret                             ;
 
-NO_RTC_FOUND:           
+NO_RTC_FOUND:
 
                         LD HL,NoRTCmessage              ;
                         CALL PrintMsg                   ;
@@ -358,7 +358,7 @@ NO_RTC_FOUND:
 
 
 
-NUMBER_TO_ASC:          
+NUMBER_TO_ASC:
                         LD a,(HL)                       ;
 
         ; get just the upper bits
@@ -377,10 +377,10 @@ NUMBER_TO_ASC:
 
                         ret                             ;
 
-LOAD_PREPARE_AND_MULT:  
+LOAD_PREPARE_AND_MULT:
                         ld a,(HL)                       ;
 ;       and 0x7F ; clear the bit 7
-PREPARE_AND_MULT:       
+PREPARE_AND_MULT:
                         SRL a                           ;
                         SRL a                           ;
                         SRL a                           ;
@@ -396,7 +396,7 @@ PREPARE_AND_MULT:
 SEND_DATA:
         ; 8 bits
                         ld h,8                          ;
-SEND_DATA_LOOP:         
+SEND_DATA_LOOP:
 
         ; next bit
                         RLC L                           ;
@@ -410,19 +410,20 @@ SEND_DATA_LOOP:
                         jr nz, SEND_DATA_LOOP           ;
 
 
-WAIT_ACK:               
+WAIT_ACK:
         ; free the line to wait for the ACK
                         CALL SDA1                       ;
                         call PULSE_CLOCK                ;
                         ret                             ;
 
-READ:                   
+READ:
         ; free the data line
+//CSBreak()
                         CALL SDA1                       ;
 
         ; lets read 8 bits
                         ld D,8                          ;
-READ_LOOP:              
+READ_LOOP:
 
         ; next bit
                         rlc (hl)                        ;
@@ -441,10 +442,10 @@ READ_LOOP:
                         res 0,(hl)                      ;
                         jr end_set                      ;
 
-set_bit:                
+set_bit:
                         set 0,(hl)                      ;
 
-end_set:                
+end_set:
 
 
         ; clock is low
@@ -457,16 +458,18 @@ end_set:
                         jr nz, READ_LOOP                ;
 
         ; finish the byte read
+//CSBreak()
+//CSExit()
                         ret                             ;
 
-SEND_NACK:              
+SEND_NACK:
                         ld a,1                          ;
                         jr SEND_ACK_NACK                ;
 
-SEND_ACK:               
+SEND_ACK:
                         xor a                           ; a=0
 
-SEND_ACK_NACK:          
+SEND_ACK_NACK:
 
                         CALL SDA                        ;
 
@@ -493,11 +496,11 @@ START_SEQUENCE:
                         CALL SCL                        ;
                         ret                             ;
 
-SDA0:                   
+SDA0:
                         xor a                           ;
                         jr SDA                          ;
 
-SDA1:                   
+SDA1:
                         ld a,1                          ;
 
 SDA:
@@ -505,23 +508,23 @@ SDA:
                         OUT (c), a                      ;
                         ret                             ;
 
-SCL0:                   
+SCL0:
                         xor a                           ;
                         jr SCL                          ;
-SCL1:                   
+SCL1:
                         ld a,1                          ;
-SCL:                    
+SCL:
                         ld b,PORT_CLOCK                 ;
                         OUT (c), a                      ;
                         ret                             ;
 
-PULSE_CLOCK:            
+PULSE_CLOCK:
                         CALL SCL1                       ;
                         CALL SCL0                       ;
                         ret                             ;
 
 ; input A, output A = A * 10
-X10:                    
+X10:
                         ld b,a                          ;
                         add a,a                         ;
                         add a,a                         ;
@@ -530,7 +533,7 @@ X10:
                         add a,b                         ;
                         ret                             ;
 
-PrintMsg:               
+PrintMsg:
                         ld a,(hl)                       ;
                         or a                            ;
                         ret z                           ;

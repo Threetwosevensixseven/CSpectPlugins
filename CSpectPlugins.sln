@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UARTLogger", "UARTLogger\UA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RTC", "RTC\RTC.csproj", "{0FB0A4B0-9A76-4D18-9319-E0911071B1C0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "I2CTestHarness", "I2CTestHarness\I2CTestHarness.csproj", "{3708E183-3E15-4D20-8726-46C452B951C7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{0FB0A4B0-9A76-4D18-9319-E0911071B1C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0FB0A4B0-9A76-4D18-9319-E0911071B1C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0FB0A4B0-9A76-4D18-9319-E0911071B1C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3708E183-3E15-4D20-8726-46C452B951C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3708E183-3E15-4D20-8726-46C452B951C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3708E183-3E15-4D20-8726-46C452B951C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3708E183-3E15-4D20-8726-46C452B951C7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

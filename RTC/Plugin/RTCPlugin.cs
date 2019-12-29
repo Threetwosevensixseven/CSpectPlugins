@@ -47,11 +47,12 @@ namespace Plugins.RTC.Plugin
                 // Otherwise, the callback was triggered by another plugin or Z80 code running inside
                 // the emulator, so tell our plugin not to response to the next read callback,
                 // then read the actual value, then handle the callback with the read value.
-                Read_Internal = true;
+
+                //Read_Internal = true;
                 I2CLines line = (I2CLines)_address;
-                byte val = CSpect.InPort((ushort)line);
-                i2c.Process(I2CActions.Read, line, val);
-                Read_Internal = false;
+                //byte val = CSpect.InPort((ushort)line);
+                byte val = i2c.Process(I2CActions.Read, line, 0xff);
+                //Read_Internal = false;
             }
 
             _isvalid = false;
@@ -63,7 +64,7 @@ namespace Plugins.RTC.Plugin
             if (_type == eAccess.Port_Write && (_port == (int)I2CLines.SCL || _port == (int)I2CLines.DATA))
             {
                 I2CLines line = (I2CLines)_port;
-                i2c.Process(I2CActions.Write, line, _value);
+                //i2c.Process(I2CActions.Write, line, _value);
             }
             return false;
         }

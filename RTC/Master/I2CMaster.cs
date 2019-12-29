@@ -22,15 +22,19 @@ namespace Plugins.RTC.Master
         public I2CMaster(Logger Logger)
         {
             debug = Logger;
-            clock = new DS1307Device(Logger);
+            clock = new DS1307Device(Logger, true);
             firstAction = true;
             lastState = I2CStates.Stopped;
             lastStep = lastBit = -1;
             bytes = new List<byte>();
         }
 
-        public void Process(I2CActions Action, I2CLines Line, byte Value)
+        public byte Process(I2CActions Action, I2CLines Line, byte Value)
         {
+            // For writes we process the input value and ignore the return value
+            // For reads we ignore the input value and calculate a return value
+            byte rv = Value;
+
             // Log the starting state (makes for a neater VS debug log to do it here instead of the constructor).
             if (firstAction)
             {
@@ -39,10 +43,13 @@ namespace Plugins.RTC.Master
             }
 
             // Debug raw signals
-            debug.Log(LogLevels.I2CRaw, Action.ToString().PadRight(6) + Line.ToString().PadRight(4) + " = 0x" + Value.ToString("x2"));
+            if (Action == I2CActions.Write)
+                debug.Log(LogLevels.I2CRaw, Action.ToString().PadRight(6) + Line.ToString().PadRight(4) + " = 0x" + Value.ToString("x2"));
+            else
+                debug.Log(LogLevels.I2CRaw, Action.ToString().PadRight(6) + Line.ToString().PadRight(4));
 
             // Start Sequence
-            if (lastState == I2CStates.Stopped && Action == I2CActions.Write && Line == I2CLines.SCL && Value == 1)
+            if ((lastState == I2CStates.Started || lastState == I2CStates.Stopped) && Action == I2CActions.Write && Line == I2CLines.SCL && Value == 1)
             {
                 // Step 1
                 debug.Log(LogLevels.I2CSequence, "Start sequence step 1");
@@ -123,11 +130,11 @@ namespace Plugins.RTC.Master
                 byte newByte = Convert.ToByte(bit << (7 - lastBit));
                 lastByte = newByte;
                 debug.Log(LogLevels.I2CSequence, "Receiving byte, bit " + lastBit + "a (" + bit + ", " + newByte.ToString("x2") + ")");
-                lastState = I2CStates.ReceivingByte;
+                lastState = I2CStates.ProcessingByte;
                 lastStep = 0;
                 debug.Log(LogLevels.I2CState, "State = " + lastState.ToString());
             }
-            else if (lastState == I2CStates.ReceivingByte && Action == I2CActions.Write && Line == I2CLines.DATA && lastStep < 0)
+            else if (lastState == I2CStates.ProcessingByte && Action == I2CActions.Write && Line == I2CLines.DATA && lastStep < 0)
             {
                 // Bit Step a (subsequent bits)
                 byte bit = Convert.ToByte(Value & 1); // Mask off rightmost bit
@@ -148,17 +155,17 @@ namespace Plugins.RTC.Master
                     lastByte = Convert.ToByte(lastByte | newByte);
                     debug.Log(LogLevels.I2CSequence, "Receiving byte, bit " + lastBit + "a (" + bit + ", " + newByte.ToString("x2") + ")");
                 }
-                lastState = I2CStates.ReceivingByte;
+                lastState = I2CStates.ProcessingByte;
                 lastStep = 0;
                 debug.Log(LogLevels.I2CState, "State = " + lastState.ToString());
             }
-            else if (lastState == I2CStates.ReceivingByte && Action == I2CActions.Write && Line == I2CLines.SCL && Value == 1 && lastStep == 0)
+            else if (lastState == I2CStates.ProcessingByte && Action == I2CActions.Write && Line == I2CLines.SCL && Value == 1 && lastStep == 0)
             {
                 // Bit Step b
                 debug.Log(LogLevels.I2CSequence, "Receiving byte, bit " + lastBit + "b");
                 lastStep = 1;
             }
-            else if (lastState == I2CStates.ReceivingByte && Action == I2CActions.Write && Line == I2CLines.SCL && Value == 0 && lastStep == 1)
+            else if (lastState == I2CStates.ProcessingByte && Action == I2CActions.Write && Line == I2CLines.SCL && Value == 0 && lastStep == 1)
             {
                 // Bit Step c
                 debug.Log(LogLevels.I2CSequence, "Receiving byte, bit " + lastBit + "c");
@@ -174,6 +181,46 @@ namespace Plugins.RTC.Master
                 lastStep = -1;
                 lastBit++;
             }
+
+            // Receive byte    
+            else if ((lastState == I2CStates.Stopped || lastState == I2CStates.Started) && Action == I2CActions.Read && Line == I2CLines.DATA)
+            {
+                // Bit Step a (first bit)
+                if (lastBit < 0 || lastBit >= 8)
+                    lastBit = 0;
+                lastByte = clock.Read();
+                rv = Convert.ToByte((lastByte >> (7 - lastBit)) & 1); // Mask off rightmost bit
+                debug.Log(LogLevels.I2CSequence, "Sending byte, bit " + lastBit + "a (" + rv + ", " + lastByte.ToString("x2") + ")");
+                lastState = I2CStates.ProcessingByte;
+                lastStep = 0;
+                debug.Log(LogLevels.I2CState, "State = " + lastState.ToString());
+            }
+            else if (lastState == I2CStates.ProcessingByte && Action == I2CActions.Read && Line == I2CLines.DATA && lastBit >= 0 && lastBit <= 5)
+            {
+                // Bit Step b (bits 1 to 6)
+                lastBit++;
+                lastByte = clock.Read();
+                rv = Convert.ToByte((lastByte >> (7 - lastBit)) & 1); // Mask off rightmost bit
+                debug.Log(LogLevels.I2CSequence, "Sending byte, bit " + lastBit + "b (" + rv + ", " + lastByte.ToString("x2") + ")");
+            }
+            else if (lastState == I2CStates.ProcessingByte && Action == I2CActions.Read && Line == I2CLines.DATA && lastBit > 5)
+            {
+                // Bit Step c (bit 7)
+                lastBit++;
+                lastByte = clock.Read();
+                rv = Convert.ToByte((lastByte >> (7 - lastBit)) & 1); // Mask off rightmost bit
+                debug.Log(LogLevels.I2CSequence, "Sending byte, bit " + lastBit + "c (" + rv + ", " + lastByte.ToString("x2") + ")");
+                lastState = I2CStates.Started;
+                lastStep = -1;
+                debug.Log(LogLevels.I2CState, "State = " + lastState.ToString());
+            }
+            //else if (lastState == I2CStates.ProcessingByte && Action == I2CActions.Read && Line == I2CLines.DATA && lastStep == 1)
+            //{
+
+            //}
+
+
+            // Catch invalid sequences
             else if (lastState == I2CStates.Started)
             {
                 debug.Log(LogLevels.I2CSequence, "Invalid receive byte sequence, aborted");
@@ -181,6 +228,8 @@ namespace Plugins.RTC.Master
                 lastStep = -1;
                 debug.Log(LogLevels.I2CState, "State = " + lastState.ToString());
             }
+
+            return rv;
         }
     }
 }

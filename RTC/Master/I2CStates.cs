@@ -12,6 +12,6 @@ namespace Plugins.RTC.Master
         Stopping,
         Started,
         Starting,
-        ReceivingByte,
+        ProcessingByte,
     }
 }
