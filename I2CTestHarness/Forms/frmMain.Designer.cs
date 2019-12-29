@@ -100,6 +100,7 @@
             this.Controls.Add(this.pnlLogs);
             this.Controls.Add(this.btnGetTime);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimumSize = new System.Drawing.Size(640, 192);
             this.Name = "frmMain";
             this.Text = "I2C Test Harness";
             this.Load += new System.EventHandler(this.frmMain_Load);

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using I2CTestHarness.Classes;
+using I2CTestHarness.I2C;
 
 namespace I2CTestHarness
 {
@@ -28,7 +28,7 @@ namespace I2CTestHarness
             first = true;
             Bus = new I2CBus();
             Master = new I2CMaster(Bus, LogMaster);
-            DS1307 = new I2CSlave(Bus, LogSlave);
+            DS1307 = new DS1307(Bus, LogSlave);
             Bus.Start();
         }
 

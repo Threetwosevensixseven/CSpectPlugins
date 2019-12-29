@@ -49,12 +49,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\CommandStates.cs" />
-    <Compile Include="Classes\DataDirection.cs" />
-    <Compile Include="Classes\I2CBus.cs" />
-    <Compile Include="Classes\II2CDevice.cs" />
-    <Compile Include="Classes\I2CMaster.cs" />
-    <Compile Include="Classes\I2CSlave.cs" />
+    <Compile Include="I2C\CommandStates.cs" />
+    <Compile Include="I2C\DataDirection.cs" />
+    <Compile Include="I2C\DS1307.cs" />
+    <Compile Include="I2C\I2CBus.cs" />
+    <Compile Include="I2C\II2CDevice.cs" />
+    <Compile Include="I2C\I2CMaster.cs" />
+    <Compile Include="I2C\I2CSlave.cs" />
     <Compile Include="Forms\frmMain.cs">
       <SubType>Form</SubType>
     </Compile>
