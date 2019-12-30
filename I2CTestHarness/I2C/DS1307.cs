@@ -6,6 +6,14 @@ using System.Threading.Tasks;
 
 namespace I2CTestHarness.I2C
 {
+    /// <summary>
+    /// This concrete implementation of a DS1307 RTC I2C slave device abstracts away much of the plumbing in the I2CSlave
+    /// base class, and does away with most of the need to interact with the I2CBus or I2CMaster classes.
+    /// Members marked override provide an implementation for specific concrete details the base class or bus needs to know about.
+    /// Protected and public members allow the concrete slave device to interface with the bus.
+    /// Methods whose name begins with On*, such as OnByteRead or OnByteWritten, are notification methods from the base class, 
+    /// originating from the bus but presented here at a higher level of abstraction.
+    /// </summary>
     public class DS1307 : I2CSlave
     {
         private CommandStates transactionState;

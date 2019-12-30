@@ -6,7 +6,15 @@ using System.Threading.Tasks;
 
 namespace I2CTestHarness.I2C
 {
-    public class I2CSlave : II2CDevice
+    /// <summary>
+    /// This abstract implementation of an I2C slave is intended to be subclassed for each different concrete slave 
+    /// device implementation.
+    /// Most of the public methods and properties in the abstract slave class interface with the I2CBus or I2CMaster classes.
+    /// The abstract and protected members interface with the concrete slave devices.
+    /// Methods whose name begins with On*, such as OnByteRead or OnByteWritten, are notifications for the concrete
+    /// slave devices.
+    /// </summary>
+    public abstract class I2CSlave : II2CDevice
     {
         private I2CBus bus;
         private UpdateLogEventHandler logCallback;
@@ -32,13 +40,15 @@ namespace I2CTestHarness.I2C
             justStarted = justAckNacked = false;
         }
 
-        public virtual byte SlaveAddress
-        {
-            get
-            {
-                throw new NotImplementedException("SlaveAddress must be implemented in derived class");
-            }
-        }
+        public abstract byte SlaveAddress { get; }
+
+        public abstract string DeviceName { get; }
+
+        protected abstract void OnTransactionChanged(CommandStates NewState);
+
+        protected abstract bool OnByteRead(byte Byte);
+
+        protected abstract bool OnByteWritten(byte Byte);
 
         public byte WriteAddress
         {
@@ -53,14 +63,6 @@ namespace I2CTestHarness.I2C
             get
             {
                 return Convert.ToByte(((SlaveAddress << 1) & 255) | 1);
-            }
-        }
-
-        public virtual string DeviceName
-        {
-            get
-            {
-                throw new NotImplementedException("DeviceName must be implemented in derived class");
             }
         }
 
@@ -227,21 +229,6 @@ namespace I2CTestHarness.I2C
             //    Log("Data cannot change when clock is high!");
                 //throw new InvalidOperationException("Data cannot change when clock is high!");
             //}
-        }
-
-        protected virtual void OnTransactionChanged(CommandStates NewState)
-        {
-            throw new NotImplementedException("TransactionChange must be implemented in derived class");
-        }
-
-        protected virtual bool OnByteRead(byte Byte)
-        {
-            throw new NotImplementedException("ReadByte must be implemented in derived class");
-        }
-
-        protected virtual bool OnByteWritten(byte Byte)
-        {
-            throw new NotImplementedException("WriteByte must be implemented in derived class");
         }
     }
 }

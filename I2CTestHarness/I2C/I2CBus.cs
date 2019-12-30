@@ -6,6 +6,15 @@ using System.Threading.Tasks;
 
 namespace I2CTestHarness.I2C
 {
+    /// <summary>
+    /// The I2CBus is an active I2C bus manager class that glues together an I2CMaster and zero, one or more concrete 
+    /// I2CSlave device implementations. 
+    /// At heart, it has two lines, an SCL clock line and an SDA data line, which is pulled low or released high by
+    /// both master and slaves, according to some bus arbitration rules.
+    /// It has more logic and responsibilities than a hardware two-wire bus would have, but it suits a passive I2C 
+    /// implementation such as this, where the clock is intended to be bitbanged by emulator I/O instead of free-running
+    /// and driven from an external oscillator.
+    /// </summary>
     public class I2CBus
     {
         private bool sda;

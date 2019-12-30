@@ -56,16 +56,16 @@
     <Compile Include="I2C\II2CDevice.cs" />
     <Compile Include="I2C\I2CMaster.cs" />
     <Compile Include="I2C\I2CSlave.cs" />
-    <Compile Include="Forms\frmMain.cs">
+    <Compile Include="Forms\TestHarnessForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\frmMain.Designer.cs">
-      <DependentUpon>frmMain.cs</DependentUpon>
+    <Compile Include="Forms\TestHarnessForm.Designer.cs">
+      <DependentUpon>TestHarnessForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Forms\frmMain.resx">
-      <DependentUpon>frmMain.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\TestHarnessForm.resx">
+      <DependentUpon>TestHarnessForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

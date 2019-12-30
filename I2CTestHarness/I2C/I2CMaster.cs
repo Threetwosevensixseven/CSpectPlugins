@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 
 namespace I2CTestHarness.I2C
 {
+    /// <summary>
+    /// The I2CMaster class contains functionality to interface with the I2CBus class, and indirectly through the bus,
+    /// communicate with one or more I2CSlave concrete subclass implementations.
+    /// It has some primitive public command methods prefixed with CMD_*, which can be hooked up to a test harness
+    /// or the I/O ports of an emulator.
+    /// </summary>
     public class I2CMaster : II2CDevice
     {
         private I2CBus bus;
