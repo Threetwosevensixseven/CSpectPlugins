@@ -20,6 +20,8 @@ namespace I2CTestHarness.I2C
             bus.Register(this);
         }
         public byte SlaveAddress { get { return 0x00; } }
+        public byte WriteAddress { get { return 0x00; } }
+        public byte ReadAddress { get { return 0x00; } }
 
         public string DeviceName { get { return "I2C MASTER"; } }
 
@@ -27,8 +29,10 @@ namespace I2CTestHarness.I2C
 
         public void Log(string Text)
         {
+            #if DEBUG
             if (logCallback != null)
                 logCallback(Text);
+            #endif
         }
 
         public void Tick(bool NewSDA, bool NewSCL, bool OldSDA, bool OldSCL)
@@ -43,7 +47,7 @@ namespace I2CTestHarness.I2C
             Log("    SDA=" + (SDA ? "1" : "0") + ", SCL=" + (SCL ? "1" : "0"));
         }
 
-        public void CMD_START()
+        public bool CMD_START()
         {
             // A change in the state of the data line, from HIGH to LOW, while the clock is HIGH, defines a START condition.
             Log("Tx CMD_START");
@@ -51,6 +55,7 @@ namespace I2CTestHarness.I2C
             bus.SetSCL(this, true);
             bus.SetSDA(this, false); // Falling data edge should trigger slaves
             bus.SetSCL(this, false);
+            return true; // Allows chaining commands together with lazy &&
         }
 
         public void CMD_STOP()
@@ -60,7 +65,6 @@ namespace I2CTestHarness.I2C
             bus.SetSDA(this, false);
             bus.SetSCL(this, true);
             bus.SetSDA(this, true); // Rising data edge should trigger slaves
-            //bus.SetSCL(this, false);
         }
 
         public bool CMD_TX(byte Byte)
@@ -72,12 +76,19 @@ namespace I2CTestHarness.I2C
                 bool val = ((Byte >> (7 - i)) & 1) == 1;
                 SendBit(val, i, "data");
             }
-            Log("Rx ACK  bit 8=0");
+            Log("Waiting for ACK/NACK...");
             bus.SetSDA(this, true);
             bus.SetSCL(this, true);
-            bool success = bus.SDA; // Read ACK/NACK
+            bool ack = !bus.SDA; // Read ACK/NACK
+            if (ack)
+                Log("Rx ACK  bit 8=0");
+            else
+            {
+                Log("Rx NACK bit 8=1");
+                Log("Aborting transaction...");
+            }
             bus.SetSCL(this, false);
-            return success;
+            return ack;
         }
 
         private void SendBit(bool Bit, int Count, string BitType)

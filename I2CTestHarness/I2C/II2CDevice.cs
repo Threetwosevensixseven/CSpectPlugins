@@ -11,6 +11,8 @@ namespace I2CTestHarness.I2C
     public interface II2CDevice
     {
         byte SlaveAddress { get; }
+        byte WriteAddress { get; }
+        byte ReadAddress { get; }
         string DeviceName { get; }
         void Tick(bool NewSDA, bool NewSCL, bool OldSDA, bool OldSCL);
         bool IsMaster { get; }

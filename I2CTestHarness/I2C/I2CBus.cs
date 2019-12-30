@@ -27,11 +27,13 @@ namespace I2CTestHarness.I2C
                 devices.Add(Device);
             else
                 devices.Insert(0, Device); // Better to put slaves at the beginning of the callback list, as they get more traffic
+            #if DEBUG
             Device.Log(Device.DeviceName);
             if (Device.IsMaster)
                 Device.Log("Device is the bus master");
             else
                 Device.Log("Device is a slave at address 0x" + Device.SlaveAddress.ToString("X2"));
+            #endif
         }
 
         public void Start()
@@ -39,17 +41,21 @@ namespace I2CTestHarness.I2C
             if (devices.Count(d => d.IsMaster) != 1)
                 throw new InvalidOperationException("I2C bus must always have a single master");
             sda = scl = true;
+            #if DEBUG
             if (!started)
                 foreach (var device in devices)
                     device.Log("Bus started");
+            #endif
             started = true;
         }
 
         public void Stop()
         {
+            #if DEBUG
             if (started)
                 foreach (var device in devices)
                     device.Log("Bus stopped");
+            #endif
             started = false;
         }
 

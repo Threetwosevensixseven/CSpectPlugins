@@ -33,6 +33,7 @@
             this.pnlLogs = new System.Windows.Forms.TableLayoutPanel();
             this.txtMaster = new System.Windows.Forms.TextBox();
             this.txtSlave = new System.Windows.Forms.TextBox();
+            this.lblStatus = new System.Windows.Forms.Label();
             this.pnlLogs.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -92,11 +93,20 @@
             this.txtSlave.Size = new System.Drawing.Size(437, 259);
             this.txtSlave.TabIndex = 1;
             // 
+            // lblStatus
+            // 
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.Location = new System.Drawing.Point(93, 17);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(0, 13);
+            this.lblStatus.TabIndex = 2;
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(909, 318);
+            this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.pnlLogs);
             this.Controls.Add(this.btnGetTime);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -107,6 +117,7 @@
             this.pnlLogs.ResumeLayout(false);
             this.pnlLogs.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -116,6 +127,7 @@
         private System.Windows.Forms.TableLayoutPanel pnlLogs;
         private System.Windows.Forms.TextBox txtMaster;
         private System.Windows.Forms.TextBox txtSlave;
+        private System.Windows.Forms.Label lblStatus;
     }
 }
 
