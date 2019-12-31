@@ -16,6 +16,6 @@ namespace I2CTestHarness.I2C
     {
         Stopped,
         Started,
-        ReceivingByte
+        TransferringByte
     }
 }

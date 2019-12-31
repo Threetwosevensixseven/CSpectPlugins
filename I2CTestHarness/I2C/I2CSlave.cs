@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,6 +39,7 @@ namespace I2CTestHarness.I2C
             bus.Register(this);
             Log("State: " + currentState.ToString());
             justStarted = justAckNacked = false;
+            currentDirection = DataDirection.Write;
         }
 
         public abstract byte SlaveAddress { get; }
@@ -46,7 +48,7 @@ namespace I2CTestHarness.I2C
 
         protected abstract void OnTransactionChanged(CommandStates NewState);
 
-        protected abstract bool OnByteRead(byte Byte);
+        protected abstract byte OnByteRead();
 
         protected abstract bool OnByteWritten(byte Byte);
 
@@ -122,7 +124,7 @@ namespace I2CTestHarness.I2C
                 currentState = CommandStates.Started;
                 Log("State: " + currentState.ToString());
             }
-            else if (currentState == CommandStates.ReceivingByte && OldSCL && NewSCL && lastSDA && !NewSDA)
+            else if (currentState == CommandStates.TransferringByte && OldSCL && NewSCL && lastSDA && !NewSDA)
             {
                 Log("Rx CMD_START");
                 OnTransactionChanged(CommandStates.Started);
@@ -137,7 +139,7 @@ namespace I2CTestHarness.I2C
             // Process CMD_STOP
             // A change in the state of the data line, from LOW to HIGH, while the clock line is HIGH, defines a STOP condition.
             // Trigger on rising edge of data
-            else if ((currentState == CommandStates.Started || currentState == CommandStates.ReceivingByte) && NewSCL && lastSCL && !lastSDA && NewSDA)
+            else if ((currentState == CommandStates.Started || currentState == CommandStates.TransferringByte) && NewSCL && lastSCL && !lastSDA && NewSDA)
             {
                 Log("Rx CMD_STOP");
                 OnTransactionChanged(CommandStates.Stopped);
@@ -152,73 +154,134 @@ namespace I2CTestHarness.I2C
             // Sample data, triggering on falling edge of clock
             else if (!justStarted && !justAckNacked && currentState == CommandStates.Started && lastSCL && !NewSCL)
             {
-                Log("Rx CMD_TX");
-                justStarted = justAckNacked = justStopped = false;
-                lastBit = 0;
-                currentByte = Convert.ToByte((NewSDA ? 1 : 0) << (7 - lastBit));
-                Log("Rx data bit " + lastBit + "=" + (NewSDA ? "1" : "0"));
-                lastState = currentState;
-                currentState = CommandStates.ReceivingByte;
-                Log("State: " + currentState.ToString());
-            }
-            else if (currentState == CommandStates.ReceivingByte && !lastSCL && NewSCL && lastBit >= 0 && lastBit <= 6)
-            {
-                lastBit++;
-                justStarted = justAckNacked = justStopped = false;
-                currentByte = Convert.ToByte(currentByte | ((NewSDA ? 1 : 0) << (7 - lastBit)));
-                Log("Rx data bit " + lastBit + "=" + (NewSDA ? "1" : "0"));
-            }
-            else if (currentState == CommandStates.ReceivingByte && !lastSCL && NewSCL && lastBit == 7)
-            {
-                lastBit++;
-                justStarted = justStopped = false;
-                justAckNacked = true;
-                Log("Rx byte=0x" + currentByte.ToString("X2"));
-                if (bytesSinceStart == 0)
+                if (currentDirection == DataDirection.Write)
                 {
-                    // First byte since (re)start is always a slave address plus direction
-                    bool isMine = HasAddress(currentByte, ref currentDirection);
-                    if (isMine)
+                    Log("Rx CMD_TX");
+                    justStarted = justAckNacked = justStopped = false;
+                    lastBit = 0;
+                    currentByte = Convert.ToByte((NewSDA ? 1 : 0) << (7 - lastBit));
+                    Log("Rx data bit " + lastBit + "=" + (NewSDA ? "1" : "0"));
+                    lastState = currentState;
+                    currentState = CommandStates.TransferringByte;
+                    Log("State: " + currentState.ToString());
+                }
+                else
+                {   // currentDirection == DataDirection.Read
+                    Log("Rx CMD_RX");
+                    justStarted = justAckNacked = justStopped = false;
+                    lastState = currentState;
+                    currentState = CommandStates.TransferringByte;
+                    Log("State: " + currentState.ToString());
+                    lastBit = 0;
+                    currentByte = OnByteRead();
+                    bool bit = ((currentByte >> (7 - lastBit)) & 1) == 1;
+                    Log("Tx data bit " + lastBit + "=" + (bit ? "1" : "0"));
+                    bus.SetSDA(this, bit);
+                }
+            }
+            else if (currentState == CommandStates.TransferringByte && !lastSCL && NewSCL && lastBit >= 0 && lastBit <= 6)
+            {
+                if (currentDirection == DataDirection.Write)
+                {
+                    lastBit++;
+                    justStarted = justAckNacked = justStopped = false;
+                    currentByte = Convert.ToByte(currentByte | ((NewSDA ? 1 : 0) << (7 - lastBit)));
+                    Log("Rx data bit " + lastBit + "=" + (NewSDA ? "1" : "0"));
+                }
+                else
+                {   // currentDirection == DataDirection.Read
+                    lastBit++;
+                    justStarted = justAckNacked = justStopped = false;
+                    bool bit = ((currentByte >> (7 - lastBit)) & 1) == 1;
+                    Log("Tx data bit " + lastBit + "=" + (bit ? "1" : "0"));
+                    bus.SetSDA(this, bit);
+                }
+            }
+            else if (currentState == CommandStates.TransferringByte && !lastSCL && NewSCL && lastBit == 7)
+            {
+                if (currentDirection == DataDirection.Write)
+                {
+                    lastBit++;
+                    justStarted = justStopped = false;
+                    justAckNacked = true;
+                    Log("Rx byte=0x" + currentByte.ToString("X2"));
+                    if (bytesSinceStart == 0)
                     {
-                        Log("Data address 0x" + (currentByte >> 1).ToString("X2") + " matches slave address");
-                        Log("Accepting data " + currentDirection.ToString().ToUpper() + "s to " + DeviceName);
-                        OnTransactionChanged(CommandStates.Started);
-                        SendACK(); // Send an ACK to participate in the rest of the transaction
-                        bytesSinceStart++;
-                        lastState = currentState;
-                        currentState = CommandStates.Started;
-                        Log("State: " + currentState.ToString());
+                        // First byte since (re)start is always a slave address plus direction
+                        bool isMine = HasAddress(currentByte, ref currentDirection);
+                        if (isMine)
+                        {
+                            //if (currentDirection == DataDirection.Read)
+                            //    Debugger.Break();
+                            Log("Data address 0x" + (currentByte >> 1).ToString("X2") + " matches slave address");
+                            Log("Accepting data " + currentDirection.ToString().ToUpper() + "s to " + DeviceName);
+                            OnTransactionChanged(CommandStates.Started);
+                            SendACK(); // Send an ACK to participate in the rest of the transaction
+                            bytesSinceStart++;
+                            lastState = currentState;
+                            currentState = CommandStates.Started;
+                            Log("State: " + currentState.ToString());
+                        }
+                        else
+                        {
+                            Log("Data address 0x" + (currentByte >> 1).ToString("X2") + " is for another slave");
+                            Log("Ignoring further data until next CMD_START");
+                            // Don't sent an ACK or NACK because we were only eavesdropping
+                            lastState = currentState;
+                            currentState = CommandStates.Stopped;
+                            Log("State: " + currentState.ToString());
+                        }
                     }
                     else
                     {
-                        Log("Data address 0x" + (currentByte >> 1).ToString("X2") + " is for another slave");
-                        Log("Ignoring further data until next CMD_START");
-                        // Don't sent an ACK or NACK because we were only eavesdropping
-                        lastState = currentState;
-                        currentState = CommandStates.Stopped;
-                        Log("State: " + currentState.ToString());
+                        // Second byte after start is usually a register address, but it depends on the concrete slave device.
+                        // We can't assume this, so send all subsequent bytes to the slave and let it decide how to handle.
+                        bool ack = OnByteWritten(currentByte);
+                        // Relay this decision back to the I2C master
+                        if (ack)
+                            SendACK(); // Send an ACK to continue participating in the rest of the transaction
+                        else
+                        {
+                            OnTransactionChanged(CommandStates.Stopped);
+                            SendNACK(); // Send a NACK to abort the transaction
+                        }
                     }
                 }
                 else
-                {
-                    // Second byte after start is usually a register address, but it depends on the concrete slave device.
-                    // We can't assume this, so send all subsequent bytes to the slave and let it decide how to handle.
-                    bool ack;
-                    // See what the concrete slave device wants to do with the byte
-                    if (currentDirection == DataDirection.Read)
-                        ack = OnByteRead(currentByte);
-                    else
-                        ack = OnByteWritten(currentByte);
-                    // Relay this decision back to the I2C master
+                {   // currentDirection == DataDirection.Read
+                    Log("Waiting for ACK/NACK...");
+                    bool ack = !bus.SDA; // Sample ACK/NACK from master
                     if (ack)
-                        SendACK(); // Send an ACK to continue participating in the rest of the transaction
+                    {
+                        Log("Rx ACK  bit 8=0");
+                        bytesSinceStart++;
+                        lastState = currentState;
+                        currentState = CommandStates.Started;
+                        justAckNacked = justStarted = true;
+                        justStopped = false;
+                        Log("State: " + currentState.ToString());
+                    }
                     else
                     {
-                        OnTransactionChanged(CommandStates.Stopped);
-                        SendNACK(); // Send a NACK to abort the transaction
+                        Log("Rx NACK bit 8=1");
+                        bytesSinceStart++;
+                        lastState = currentState;
+                        currentState = CommandStates.Stopped;
+                        justAckNacked = justStopped = true;
+                        justStarted = false;
+                        Log("State: " + currentState.ToString());
                     }
                 }
             }
+
+            // Transmit data bit
+            //if (currentDirection == DataDirection.Read)
+            //{
+
+            //}
+
+
+            // Catch-all, tidy up transition states
             else
             {
                 justStarted = justStopped = justAckNacked = false;

@@ -84,7 +84,7 @@ namespace I2CTestHarness.I2C
             }
             Log("Waiting for ACK/NACK...");
             bus.SetSDA(this, true);
-            bus.SetSCL(this, true);
+            bus.SetSCL(this, true); // This should trigger the slave to put the ACK/NACK on the data line
             bool ack = !bus.SDA; // Read ACK/NACK
             if (ack)
                 Log("Rx ACK  bit 8=0");
@@ -97,12 +97,46 @@ namespace I2CTestHarness.I2C
             return ack;
         }
 
+        public Byte CMD_RX(bool LastByte = false)
+        {
+            Log("Tx CMD_RX");
+            byte val = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                bool bit = ReceiveBit(i, "data");
+                int newVal = bit ? 1 : 0;
+                val |= Convert.ToByte(newVal << (7 - i));
+                //Log("Val=0x" + val.ToString("X2"));
+            }
+            if (LastByte) // For last byte, send NACK
+                Log("Tx NACK bit 8=1");
+            else
+                Log("Tx ACK  bit 8=0");
+            bus.SetSDA(this, LastByte); // Master should put ACK/NACK on the data line here
+            bus.SetSCL(this, true);     // This should trigger the slave to sample an ACK/NACK on the data line
+            bus.SetSCL(this, false);
+            var chr = '?';
+            if (val >= 32 || val < 255)
+                chr = Convert.ToChar(val);
+            Log("Rx byte=0x" + val.ToString("X2") + " ('" + chr + "')");
+            return val;
+        }
+
         private void SendBit(bool Bit, int Count, string BitType)
         {
             Log("Tx " + BitType.PadRight(4) + " bit " + Count + "=" + (Bit ? "1" : "0"));
-            bus.SetSDA(this, Bit);
+            bus.SetSDA(this, Bit);   // Master should present data for slave here
             bus.SetSCL(this, true);
-            bus.SetSCL(this, false); // Falling clock edge should trigger slaves
+            bus.SetSCL(this, false); // Falling clock edge should trigger slave to sample here
+        }
+
+        private bool ReceiveBit(int Count, string BitType)
+        {
+            bus.SetSCL(this, true);  // Falling clock edge should trigger slaves to present data here (subsequent bits)
+            bus.SetSCL(this, false); // or here (first bit)
+            bool bit = bus.SDA;      // Master should sample data directly after falling clock edge 
+            Log("Rx " + BitType.PadRight(4) + " bit " + Count + "=" + (bit ? "1" : "0"));
+            return bit;
         }
     }
 }

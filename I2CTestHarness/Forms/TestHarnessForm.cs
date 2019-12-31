@@ -16,7 +16,7 @@ namespace I2CTestHarness
     /// along with any concrete slave implementations.
     /// The twin textboxes are hooked up to a master and single slave in the Debug configuration, and receive messages from
     /// these, along with the bus.
-    /// In Release confuration I2CBus, I2CMaster and I2CSlave have logging disabled to improve emulator performance.
+    /// In Release configuration I2CBus, I2CMaster and I2CSlave have logging disabled to improve emulator performance.
     /// </summary>
     public partial class TestHarnessForm : Form
     {
@@ -75,12 +75,22 @@ namespace I2CTestHarness
             success = success && Master.CMD_TX(0x3e);                // Set reg = 62 (Z)
             success = success && Master.CMD_START();                 // Restart
             success = success && Master.CMD_TX(DS1307.ReadAddress);  // Read DS1307
+            //txtMaster.Text = txtSlave.Text = "";
+            string test = "";
+            AppendByte(ref test, Master.CMD_RX());                   // Read reg = 62 (Z)
+            AppendByte(ref test, Master.CMD_RX(true));               // Read reg = 63 (X)
             Master.CMD_STOP();
+            //Master.CMD_START();                                      // Start
             if (success)
-                lblStatus.Text = "Success";
+                lblStatus.Text = "Success: " + test;
             else
                 lblStatus.Text = "Failed, received NACK";
             running = false;
+        }
+
+        private void AppendByte(ref string Text, byte Byte)
+        {
+            Text += (char)Byte;
         }
     }
 }

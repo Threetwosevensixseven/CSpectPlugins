@@ -71,12 +71,16 @@ namespace I2CTestHarness.I2C
             }
         }
 
-        protected override bool OnByteRead(byte Byte)
+        protected override byte OnByteRead()
         {
-            Log("** RTC read reg 0x" + regPointer.ToString("X2") + "=0x" + registers[regPointer].ToString("X2"));
+            byte val = registers[regPointer];
+            var chr = '?';
+            if (val >= 32 || val < 255)
+                chr = Convert.ToChar(val);
+            Log("** RTC read reg 0x" + regPointer.ToString("X2") + "=0x" + val.ToString("X2") + " ('" + chr + "')");
             IncreaseRegPointer();
             bytesSinceStart++;
-            return true;
+            return val;
         }
 
         protected override bool OnByteWritten(byte Byte)
