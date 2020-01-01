@@ -76,13 +76,15 @@ namespace I2CTestHarness
             success = success && Master.CMD_START();                 // Restart
             success = success && Master.CMD_TX(DS1307.ReadAddress);  // Read DS1307
             //txtMaster.Text = txtSlave.Text = "";
-            string test = "";
-            AppendByte(ref test, Master.CMD_RX());                   // Read reg = 62 (Z)
-            AppendByte(ref test, Master.CMD_RX(true));               // Read reg = 63 (X)
+            var bytes = ReadBytes(9);
+            string sig = Encoding.ASCII.GetString(bytes, 0, 2);
+            var dt = I2CTestHarness.I2C.DS1307.ConvertDateTime(bytes, 2);
+            //AppendByte(ref test, Master.CMD_RX());                   // Read reg = 62 (Z)
+            //AppendByte(ref test, Master.CMD_RX(true));               // Read reg = 63 (X)
             Master.CMD_STOP();
             //Master.CMD_START();                                      // Start
             if (success)
-                lblStatus.Text = "Success: " + test;
+                lblStatus.Text = "Success: " + sig + " " + dt.ToShortDateString() + " " + dt.ToLongTimeString();
             else
                 lblStatus.Text = "Failed, received NACK";
             running = false;
@@ -91,6 +93,14 @@ namespace I2CTestHarness
         private void AppendByte(ref string Text, byte Byte)
         {
             Text += (char)Byte;
+        }
+
+        private byte[] ReadBytes(int Count)
+        {
+            var bytes = new List<byte>();
+            for (int i = 0; i < Count; i++)
+                bytes.Add(Master.CMD_RX(i == Count - 1));
+            return bytes.ToArray();
         }
     }
 }

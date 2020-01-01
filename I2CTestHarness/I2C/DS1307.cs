@@ -218,5 +218,55 @@ namespace I2CTestHarness.I2C
             // Reset buffer dirty flag
             clockUpdated = false;
         }
+
+        public static DateTime ConvertDateTime(byte[] Bytes, int Start = 0)
+        {
+            var dt = DateTime.MinValue;
+            // Reg 6: Year (0.99)
+            string d = "20"
+                + (char)(((Bytes[6 + Start] >> 4) & 15) + '0')
+                + (char)((Bytes[6 + Start] & 15) + '0') + '-'
+                // Reg 5: Month (1..12)
+                + (char)(((Bytes[5 + Start] >> 4) & 15) + '0')
+                + (char)((Bytes[5 + Start] & 15) + '0') + '-'
+                // Reg 4: Day of month aka Date (1..31)
+                + (char)(((Bytes[4 + Start] >> 4) & 15) + '0')
+                + (char)((Bytes[4 + Start] & 15) + '0') + "T";
+            // Reg 3: Day of week (Sun=1, Sat=7) - copy set this, as it's not really a property of the date
+            // Reg 2: Hours (0..24 or 0..12)
+            bool newMode24Hour = (Bytes[2 + Start] & 64) == 0;
+            string h;
+            if (newMode24Hour)
+            {
+                h = ((char)(((Bytes[2 + Start] >> 4) & 15) + '0')).ToString()
+                + (char)((Bytes[2 + Start] & 15) + '0');
+            }
+            else
+            {
+                bool pm = (Bytes[2 + Start] & 32) != 0;
+                h = ((char)(((Bytes[2 + Start] >> 4) & 1) + '0')).ToString()
+                + (char)((Bytes[2 + Start] & 15) + '0');
+                if ((Bytes[2 + Start] & 32) != 0) // pm
+                {
+                    int hh;
+                    int.TryParse(h, out hh);
+                    h = (hh + 12).ToString("D2");
+                }
+            }
+            d += h + ':'
+                // Reg 1: Minutes (0..59)
+                + (char)(((Bytes[1 + Start] >> 4) & 15) + '0')
+                + (char)((Bytes[1 + Start] & 15) + '0') + ":"
+                // Reg 0: Seconds (0..59)
+                + (char)(((Bytes[0 + Start] >> 4) & 7) + '0')
+                + (char)((Bytes[0 + Start] & 15) + '0');
+
+            DateTime newDate;
+            if (!DateTime.TryParseExact(d, "s", CultureInfo.InvariantCulture, DateTimeStyles.None, out newDate))
+                newDate = DateTime.MinValue;
+
+            return newDate;
+        }
+
     }
 }
