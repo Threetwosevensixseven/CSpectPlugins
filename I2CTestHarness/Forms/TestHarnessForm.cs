@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using I2CTestHarness.I2C;
+using RTC.I2C;
 
 namespace I2CTestHarness
 {
@@ -78,7 +78,7 @@ namespace I2CTestHarness
             //txtMaster.Text = txtSlave.Text = "";
             var bytes = ReadBytes(9);
             string sig = Encoding.ASCII.GetString(bytes, 0, 2);
-            var dt = I2CTestHarness.I2C.DS1307.ConvertDateTime(bytes, 2);
+            var dt = RTC.I2C.DS1307.ConvertDateTime(bytes, 2);
             //AppendByte(ref test, Master.CMD_RX());                   // Read reg = 62 (Z)
             //AppendByte(ref test, Master.CMD_RX(true));               // Read reg = 63 (X)
             Master.CMD_STOP();

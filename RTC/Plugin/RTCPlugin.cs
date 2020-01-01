@@ -12,14 +12,14 @@ namespace Plugins.RTC.Plugin
     {
         private bool Read_Internal;
         private iCSpect CSpect;
-        private I2CMaster i2c;
+        //private I2CMaster i2c;
         private Logger debug;
 
         public List<sIO> Init(iCSpect _CSpect)
         {
             CSpect = _CSpect;
             debug = new Logger(LogLevels.I2CRaw, LogLevels.I2CState);
-            i2c = new I2CMaster(debug);
+            //i2c = new I2CMaster(debug);
             var ports = new List<sIO>();
             ports.Add(new sIO((int)I2CLines.SCL, eAccess.Port_Read));
             ports.Add(new sIO((int)I2CLines.SCL, eAccess.Port_Write));
@@ -51,7 +51,7 @@ namespace Plugins.RTC.Plugin
                 //Read_Internal = true;
                 I2CLines line = (I2CLines)_address;
                 //byte val = CSpect.InPort((ushort)line);
-                byte val = i2c.Process(I2CActions.Read, line, 0xff);
+                //byte val = i2c.Process(I2CActions.Read, line, 0xff);
                 //Read_Internal = false;
             }
 

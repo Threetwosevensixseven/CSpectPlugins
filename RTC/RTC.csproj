@@ -44,19 +44,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Slave\DS1307Device.cs" />
-    <Compile Include="Slave\RTCActions.cs" />
-    <Compile Include="Master\I2CActions.cs" />
-    <Compile Include="Master\I2CMaster.cs" />
-    <Compile Include="Master\I2CLines.cs" />
-    <Compile Include="Master\I2CStates.cs" />
+    <Compile Include="I2C\CommandStates.cs" />
+    <Compile Include="I2C\DataDirection.cs" />
+    <Compile Include="I2C\DS1307.cs" />
+    <Compile Include="I2C\I2CBus.cs" />
+    <Compile Include="I2C\I2CMaster.cs" />
+    <Compile Include="I2C\I2CSlave.cs" />
+    <Compile Include="I2C\II2CDevice.cs" />
+    <Compile Include="Plugin\I2CLines.cs" />
     <Compile Include="Plugin\Extensions.cs" />
     <Compile Include="Plugin\Logger.cs" />
     <Compile Include="Plugin\LogLevels.cs" />
     <Compile Include="Plugin\RTCPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

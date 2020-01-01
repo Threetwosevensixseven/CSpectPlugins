@@ -49,13 +49,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="I2C\CommandStates.cs" />
-    <Compile Include="I2C\DataDirection.cs" />
-    <Compile Include="I2C\DS1307.cs" />
-    <Compile Include="I2C\I2CBus.cs" />
-    <Compile Include="I2C\II2CDevice.cs" />
-    <Compile Include="I2C\I2CMaster.cs" />
-    <Compile Include="I2C\I2CSlave.cs" />
     <Compile Include="Forms\TestHarnessForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -92,6 +85,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="I2C.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RTC\RTC.csproj">
+      <Project>{0fb0a4b0-9a76-4d18-9319-e0911071b1c0}</Project>
+      <Name>RTC</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
