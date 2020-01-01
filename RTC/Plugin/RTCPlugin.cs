@@ -1,30 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Plugin;
-using Plugins.RTC.Master;
+using RTC.I2C;
 
 namespace Plugins.RTC.Plugin
 {
     public class RTCPlugin : iPlugin
     {
-        private bool Read_Internal;
+        private const short PORT_SCL = 0x103b;
+        private const short PORT_SDA = 0x113b;
         private iCSpect CSpect;
-        //private I2CMaster i2c;
-        private Logger debug;
+        private I2CBus Bus;
+        private I2CMaster Master;
+        private I2CSlave DS1307;
 
         public List<sIO> Init(iCSpect _CSpect)
         {
             CSpect = _CSpect;
-            debug = new Logger(LogLevels.I2CRaw, LogLevels.I2CState);
-            //i2c = new I2CMaster(debug);
+            Bus = new I2CBus();
+            Master = new I2CMaster(Bus, LogMaster);
+            DS1307 = new DS1307(Bus, LogSlave);
+            Bus.Start();
             var ports = new List<sIO>();
-            ports.Add(new sIO((int)I2CLines.SCL, eAccess.Port_Read));
-            ports.Add(new sIO((int)I2CLines.SCL, eAccess.Port_Write));
-            ports.Add(new sIO((int)I2CLines.DATA, eAccess.Port_Read));
-            ports.Add(new sIO((int)I2CLines.DATA, eAccess.Port_Write));
+            ports.Add(new sIO(PORT_SCL, eAccess.Port_Read));
+            ports.Add(new sIO(PORT_SCL, eAccess.Port_Write));
+            ports.Add(new sIO(PORT_SDA, eAccess.Port_Read));
+            ports.Add(new sIO(PORT_SDA, eAccess.Port_Write));
             return ports;
         }
 
@@ -35,38 +40,45 @@ namespace Plugins.RTC.Plugin
         public byte Read(eAccess _type, int _address, out bool _isvalid)
         {
             // Only handle the two Next I/O ports corresponding to the I2C SCL and Data lines
-            if (_type == eAccess.Port_Read && (_address == (int)I2CLines.SCL || _address == (int)I2CLines.DATA))
+            if (_type == eAccess.Port_Read && _address == PORT_SCL)
             {
-                if (Read_Internal)
-                {
-                    // If this callback was triggered by the CSpect.InPort read from our own plugin,
-                    // then return without handling the callback.
-                    _isvalid = false;
-                    return 0;
-                }
-                // Otherwise, the callback was triggered by another plugin or Z80 code running inside
-                // the emulator, so tell our plugin not to response to the next read callback,
-                // then read the actual value, then handle the callback with the read value.
-
-                //Read_Internal = true;
-                I2CLines line = (I2CLines)_address;
-                //byte val = CSpect.InPort((ushort)line);
-                //byte val = i2c.Process(I2CActions.Read, line, 0xff);
-                //Read_Internal = false;
+                _isvalid = true;
+                return Convert.ToByte(Bus.SCL ? 1 : 0);
             }
-
+            else if (_type == eAccess.Port_Read && _address == PORT_SDA)
+            {
+                _isvalid = true;
+                return Convert.ToByte(Bus.SDA ? 1 : 0);
+            }
             _isvalid = false;
             return 0;
         }
 
         public bool Write(eAccess _type, int _port, byte _value)
         {
-            if (_type == eAccess.Port_Write && (_port == (int)I2CLines.SCL || _port == (int)I2CLines.DATA))
+            if (_type == eAccess.Port_Write && _port == PORT_SCL)
             {
-                I2CLines line = (I2CLines)_port;
-                //i2c.Process(I2CActions.Write, line, _value);
+                bool bit = (_value & 1) == 1;
+                Bus.SetSCL(Master, bit);
+                return true;
+            }
+            else if (_type == eAccess.Port_Write && _port == PORT_SDA)
+            {
+                bool bit = (_value & 1) == 1;
+                Bus.SetSDA(Master, bit);
+                return true;
             }
             return false;
+        }
+
+        private void LogMaster(string Text)
+        {
+            Debug.WriteLine(Text ?? "");
+        }
+
+        private void LogSlave(string Text)
+        {
+            Debug.WriteLine(Text ?? "");
         }
     }
 }

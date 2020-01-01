@@ -51,10 +51,7 @@
     <Compile Include="I2C\I2CMaster.cs" />
     <Compile Include="I2C\I2CSlave.cs" />
     <Compile Include="I2C\II2CDevice.cs" />
-    <Compile Include="Plugin\I2CLines.cs" />
     <Compile Include="Plugin\Extensions.cs" />
-    <Compile Include="Plugin\Logger.cs" />
-    <Compile Include="Plugin\LogLevels.cs" />
     <Compile Include="Plugin\RTCPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
