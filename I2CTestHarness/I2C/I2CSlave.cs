@@ -146,6 +146,7 @@ namespace I2CTestHarness.I2C
                 justStopped = true;
                 justStarted = justAckNacked = false;
                 lastState = currentState;
+                currentDirection = DataDirection.Write;
                 currentState = CommandStates.Stopped;
                 Log("State: " + currentState.ToString());
                 OnTransactionChanged(CommandStates.Stopped);
@@ -230,6 +231,7 @@ namespace I2CTestHarness.I2C
                             // Don't sent an ACK or NACK because we were only eavesdropping
                             lastState = currentState;
                             currentState = CommandStates.Stopped;
+                            currentDirection = DataDirection.Write;
                             Log("State: " + currentState.ToString());
                             OnTransactionChanged(CommandStates.Stopped);
                         }
@@ -244,6 +246,7 @@ namespace I2CTestHarness.I2C
                             SendACK(); // Send an ACK to continue participating in the rest of the transaction
                         else
                         {
+                            currentDirection = DataDirection.Write;
                             OnTransactionChanged(CommandStates.Stopped);
                             SendNACK(); // Send a NACK to abort the transaction
                         }
@@ -270,6 +273,7 @@ namespace I2CTestHarness.I2C
                         bytesSinceStart++;
                         lastState = currentState;
                         currentState = CommandStates.Stopped;
+                        currentDirection = DataDirection.Write;
                         justAckNacked = justStopped = true;
                         justStarted = false;
                         Log("State: " + currentState.ToString());

@@ -25,6 +25,8 @@ namespace I2CTestHarness.I2C
         private bool enableClock;
         private bool mode24Hour;
         private bool clockUpdated;
+        private long offset;
+
             
         public DS1307(I2CBus Bus, UpdateLogEventHandler LogCallback = null)
             : base(Bus, LogCallback)
@@ -32,6 +34,7 @@ namespace I2CTestHarness.I2C
             enableClock = true;
             mode24Hour = false;
             clockUpdated = false;
+            offset = 0;
             transactionState = CommandStates.Stopped;
             registers = new byte[64];
             regPointer = -1;
@@ -115,9 +118,9 @@ namespace I2CTestHarness.I2C
         private void CopyTimeToReg()
         {
             Log("** Copying current date/time to clock buffers...");
-            var now = DateTime.Now;
+            var now = new DateTime(DateTime.Now.Ticks - offset);
             Log("** Freezing date/time at " + now.ToString("s"));
-            Debug.WriteLine("** Freezing clock buffers at " + now.ToString("s"));
+            Log("** Current date/time offset is " + offset);
             string d;
             if (mode24Hour)
                 d = now.ToString("ddMMyyHHmmss");
@@ -142,14 +145,13 @@ namespace I2CTestHarness.I2C
             registers[6] = Convert.ToByte((((byte)d[4] - (byte)'0') * 16) + ((byte)d[5] - (byte)'0'));
             // Reset buffer dirty flag
             clockUpdated = false;
-            clockUpdated = true;
         }
 
         private void CopyRegToTime()
         {
             if (!clockUpdated)
             {
-                Log("** Clock buffers have not changed");
+                Log("** Clock buffers unchanged, discarding");
                 return;
             }
             Log("** Clock buffers have changed, updating clock...");
@@ -191,17 +193,29 @@ namespace I2CTestHarness.I2C
             // Reg 0: Seconds (0..59)
                 + (char)(((registers[0] >> 4) & 7) + '0')
                 + (char)((registers[0] & 15) + '0');
-            bool enableClock = (registers[2] & 128) == 0;
+            bool newEnableClock = (registers[2] & 128) == 0;
 
             DateTime newDate;
             if (DateTime.TryParseExact(d, "s", CultureInfo.InvariantCulture, DateTimeStyles.None, out newDate))
             {
                 Log("** Updating date/time to " + newDate.ToString("s"));
+                var now = new DateTime(DateTime.Now.Ticks);
+                offset = (now - newDate).Ticks;
+                Log("** New date/time offset is " + offset);
+                if (newEnableClock != enableClock)
+                {
+                    if (newEnableClock)
+                        Log("** Enabling clock");
+                    else
+                        Log("** Disabling clock");
+                    enableClock = newEnableClock;
+                }
             }
             else
             {
                 Log("** Ignoring invalid date/time " + d);
             }
+            // Reset buffer dirty flag
             clockUpdated = false;
         }
     }
