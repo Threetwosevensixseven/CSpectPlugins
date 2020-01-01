@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Plugins.RTC.Debug;
 
 namespace RTC.I2C
 {
@@ -28,8 +29,8 @@ namespace RTC.I2C
         private long offset;
 
             
-        public DS1307(I2CBus Bus, UpdateLogEventHandler LogCallback = null)
-            : base(Bus, LogCallback)
+        public DS1307(I2CBus Bus, ILogger Logger = null)
+            : base(Bus, Logger)
         {
             enableClock = true;
             mode24Hour = false;

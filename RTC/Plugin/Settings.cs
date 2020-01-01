@@ -14,14 +14,17 @@ namespace Plugins.RTC.Plugin
     {
         public bool EnableMasterLogging { get; set; }
         public bool EnableSlaveLogging { get; set; }
+        public bool EnableBusLogging { get; set; }
         public bool TruncateLogsOnStartup { get; set; }
         public string MasterLogFile { get; set; }
         public string SlaveLogFile { get; set; }
+        public string BusLogFile { get; set; }
 
         public Settings()
         {
             MasterLogFile = "I2CMasterLog.txt";
             SlaveLogFile = "DS1307Log.txt";
+            BusLogFile = "I2CBusLog.txt";
         }
 
         public string ToXML()

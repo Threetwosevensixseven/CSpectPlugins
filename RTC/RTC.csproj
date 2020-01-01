@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Debug\ILogger.cs" />
     <Compile Include="I2C\CommandStates.cs" />
     <Compile Include="I2C\DataDirection.cs" />
     <Compile Include="I2C\DS1307.cs" />
@@ -52,11 +53,13 @@
     <Compile Include="I2C\I2CSlave.cs" />
     <Compile Include="I2C\II2CDevice.cs" />
     <Compile Include="Plugin\Extensions.cs" />
-    <Compile Include="Plugin\FileLogger.cs" />
-    <Compile Include="Plugin\LogTargets.cs" />
+    <Compile Include="Debug\FileLogger.cs" />
     <Compile Include="Plugin\RTCPlugin.cs" />
     <Compile Include="Plugin\Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="RTC.dll.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

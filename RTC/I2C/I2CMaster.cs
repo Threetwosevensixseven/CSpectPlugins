@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Plugins.RTC.Debug;
 
 namespace RTC.I2C
 {
@@ -15,14 +16,14 @@ namespace RTC.I2C
     public class I2CMaster : II2CDevice
     {
         private I2CBus bus;
-        private UpdateLogEventHandler logCallback;
+        private ILogger log;
         private bool lastSCL;
         private bool lastSDA;
 
-        public I2CMaster(I2CBus Bus, UpdateLogEventHandler LogCallback = null)
+        public I2CMaster(I2CBus Bus, ILogger Logger = null)
         {
             bus = Bus;
-            logCallback = LogCallback;
+            log = Logger;
             bus.Register(this);
         }
         public byte SlaveAddress { get { return 0x00; } }
@@ -35,10 +36,8 @@ namespace RTC.I2C
 
         public void Log(string Text)
         {
-            #if DEBUG
-            if (logCallback != null)
-                logCallback(Text);
-            #endif
+            if (log != null)
+                log.AppendLine(Text);
         }
 
         public void Tick(bool NewSDA, bool NewSCL, bool OldSDA, bool OldSCL)

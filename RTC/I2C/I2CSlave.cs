@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Plugins.RTC.Debug;
 
 namespace RTC.I2C
 {
@@ -18,7 +19,7 @@ namespace RTC.I2C
     public abstract class I2CSlave : II2CDevice
     {
         private I2CBus bus;
-        private UpdateLogEventHandler logCallback;
+        private ILogger log;
         private bool lastSCL;
         private bool lastSDA;
         private int lastBit;
@@ -31,10 +32,10 @@ namespace RTC.I2C
         private bool justStopped;
         private bool justAckNacked;
 
-        public I2CSlave(I2CBus Bus, UpdateLogEventHandler LogCallback = null)
+        public I2CSlave(I2CBus Bus, ILogger Logger = null)
         {
             bus = Bus;
-            logCallback = LogCallback;
+            log = Logger;
             lastState = currentState = CommandStates.Stopped;
             bus.Register(this);
             Log("State: " + currentState.ToString());
@@ -72,10 +73,8 @@ namespace RTC.I2C
 
         public void Log(string Text)
         {
-            #if DEBUG
-            if (logCallback != null)
-                logCallback(Text);
-            #endif
+            if (log != null)
+                log.AppendLine(Text);
         }
 
         protected void LogBus(bool SDA, bool SCL)

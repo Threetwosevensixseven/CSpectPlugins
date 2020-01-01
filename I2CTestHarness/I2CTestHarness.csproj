@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Debug\ControlLogger.cs" />
     <Compile Include="Forms\TestHarnessForm.cs">
       <SubType>Form</SubType>
     </Compile>

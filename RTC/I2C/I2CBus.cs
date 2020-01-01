@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Plugins.RTC.Debug;
 
 namespace RTC.I2C
 {
@@ -20,11 +21,14 @@ namespace RTC.I2C
         private bool sda;
         private bool scl;
         private List<II2CDevice> devices;
+        private ILogger log;
         private bool started;
 
-        public I2CBus()
+        public I2CBus(ILogger Logger = null)
         {
             devices = new List<II2CDevice>();
+            log = Logger;
+            Log("I2C BUS");
             started = false;
         }
 
@@ -36,13 +40,11 @@ namespace RTC.I2C
                 devices.Add(Device);
             else
                 devices.Insert(0, Device); // Better to put slaves at the beginning of the callback list, as they get more traffic
-            #if DEBUG
             Device.Log(Device.DeviceName);
             if (Device.IsMaster)
                 Device.Log("Device is the bus master");
             else
                 Device.Log("Device is a slave at address 0x" + Device.SlaveAddress.ToString("X2"));
-            #endif
         }
 
         public void Start()
@@ -50,21 +52,23 @@ namespace RTC.I2C
             if (devices.Count(d => d.IsMaster) != 1)
                 throw new InvalidOperationException("I2C bus must always have a single master");
             sda = scl = true;
-            #if DEBUG
             if (!started)
+            {
+                Log("Bus started");
                 foreach (var device in devices)
                     device.Log("Bus started");
-            #endif
+            }
             started = true;
         }
 
         public void Stop()
         {
-            #if DEBUG
             if (started)
+            {
+                Log("Bus stopped");
                 foreach (var device in devices)
                     device.Log("Bus stopped");
-            #endif
+            }
             started = false;
         }
 
@@ -92,6 +96,9 @@ namespace RTC.I2C
         {
             if (!started)
                 throw new InvalidOperationException("Cannot write to I2C bus before starting");
+            if (sda == NewValue)
+                return;
+            Log("    SDA=" + (NewValue ? "1" : "0") + ", SCL=" + (scl ? "1" : "0"));
             foreach (var device in devices)
             {
                 if (device != Sender)
@@ -108,6 +115,7 @@ namespace RTC.I2C
                 throw new InvalidOperationException("Only I2C master can control SCL");
             if (scl == NewValue)
                 return;
+            Log("    SDA=" + (sda ? "1" : "0") + ", SCL=" + (NewValue ? "1" : "0"));
             foreach (var device in devices)
             {
                 if (device != Sender)
@@ -119,6 +127,12 @@ namespace RTC.I2C
         public override string ToString()
         {
             return "    SDA=" + (sda ? "1" : "0") + ", SCL=" + (scl ? "1" : "0");
+        }
+
+        public void Log(string Text)
+        {
+            if (log != null)
+                log.AppendLine(Text);
         }
     }
 }

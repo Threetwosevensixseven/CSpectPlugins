@@ -34,6 +34,7 @@
             this.txtMaster = new System.Windows.Forms.TextBox();
             this.txtSlave = new System.Windows.Forms.TextBox();
             this.lblStatus = new System.Windows.Forms.Label();
+            this.txtBus = new System.Windows.Forms.TextBox();
             this.pnlLogs.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -52,16 +53,18 @@
             this.pnlLogs.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.pnlLogs.ColumnCount = 2;
-            this.pnlLogs.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.pnlLogs.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.pnlLogs.ColumnCount = 3;
+            this.pnlLogs.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33112F));
+            this.pnlLogs.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33445F));
+            this.pnlLogs.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33445F));
             this.pnlLogs.Controls.Add(this.txtMaster, 0, 0);
-            this.pnlLogs.Controls.Add(this.txtSlave, 1, 0);
+            this.pnlLogs.Controls.Add(this.txtBus, 1, 0);
+            this.pnlLogs.Controls.Add(this.txtSlave, 2, 0);
             this.pnlLogs.Location = new System.Drawing.Point(12, 41);
             this.pnlLogs.Name = "pnlLogs";
             this.pnlLogs.RowCount = 1;
-            this.pnlLogs.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.pnlLogs.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.pnlLogs.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.pnlLogs.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.pnlLogs.Size = new System.Drawing.Size(885, 265);
             this.pnlLogs.TabIndex = 1;
             // 
@@ -76,8 +79,8 @@
             this.txtMaster.Name = "txtMaster";
             this.txtMaster.ReadOnly = true;
             this.txtMaster.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtMaster.Size = new System.Drawing.Size(436, 259);
-            this.txtMaster.TabIndex = 0;
+            this.txtMaster.Size = new System.Drawing.Size(288, 259);
+            this.txtMaster.TabIndex = 1;
             // 
             // txtSlave
             // 
@@ -85,13 +88,13 @@
             this.txtSlave.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txtSlave.Font = new System.Drawing.Font("Lucida Console", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtSlave.ForeColor = System.Drawing.Color.Chartreuse;
-            this.txtSlave.Location = new System.Drawing.Point(445, 3);
+            this.txtSlave.Location = new System.Drawing.Point(592, 3);
             this.txtSlave.Multiline = true;
             this.txtSlave.Name = "txtSlave";
             this.txtSlave.ReadOnly = true;
             this.txtSlave.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtSlave.Size = new System.Drawing.Size(437, 259);
-            this.txtSlave.TabIndex = 1;
+            this.txtSlave.Size = new System.Drawing.Size(290, 259);
+            this.txtSlave.TabIndex = 2;
             // 
             // lblStatus
             // 
@@ -99,9 +102,23 @@
             this.lblStatus.Location = new System.Drawing.Point(93, 17);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(0, 13);
-            this.lblStatus.TabIndex = 2;
+            this.lblStatus.TabIndex = 1;
             // 
-            // frmMain
+            // txtBus
+            // 
+            this.txtBus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.txtBus.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtBus.Font = new System.Drawing.Font("Lucida Console", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtBus.ForeColor = System.Drawing.Color.Chartreuse;
+            this.txtBus.Location = new System.Drawing.Point(297, 3);
+            this.txtBus.Multiline = true;
+            this.txtBus.Name = "txtBus";
+            this.txtBus.ReadOnly = true;
+            this.txtBus.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtBus.Size = new System.Drawing.Size(289, 259);
+            this.txtBus.TabIndex = 0;
+            // 
+            // TestHarnessForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -111,7 +128,7 @@
             this.Controls.Add(this.btnGetTime);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(640, 192);
-            this.Name = "frmMain";
+            this.Name = "TestHarnessForm";
             this.Text = "I2C Test Harness";
             this.Load += new System.EventHandler(this.frmMain_Load);
             this.pnlLogs.ResumeLayout(false);
@@ -128,6 +145,7 @@
         private System.Windows.Forms.TextBox txtMaster;
         private System.Windows.Forms.TextBox txtSlave;
         private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.TextBox txtBus;
     }
 }
 

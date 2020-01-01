@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using I2CTestHarness.Debug;
+using Plugins.RTC.Debug;
 using RTC.I2C;
 
 namespace I2CTestHarness
@@ -23,6 +25,9 @@ namespace I2CTestHarness
         private I2CBus Bus;
         private I2CMaster Master;
         private I2CSlave DS1307;
+        private ILogger MasterLogger;
+        private ILogger BusLogger;
+        private ILogger SlaveLogger;
         private bool first;
         private bool running;
 
@@ -35,24 +40,13 @@ namespace I2CTestHarness
         {
             first = true;
             running = false;
-            Bus = new I2CBus();
-            Master = new I2CMaster(Bus, LogMaster);
-            DS1307 = new DS1307(Bus, LogSlave);
+            BusLogger = new ControlLogger(txtBus);
+            MasterLogger = new ControlLogger(txtMaster);
+            SlaveLogger = new ControlLogger(txtSlave);
+            Bus = new I2CBus(BusLogger);
+            Master = new I2CMaster(Bus, MasterLogger);
+            DS1307 = new DS1307(Bus, SlaveLogger);
             Bus.Start();
-            #if !DEBUG
-            txtMaster.AppendText("LOGGING DISABLED IN RELEASE BUILD\r\n");
-            txtSlave.AppendText("LOGGING DISABLED IN RELEASE BUILD\r\n");
-            #endif
-        }
-
-        private void LogMaster(string Text)
-        {
-            txtMaster.AppendText((Text ?? "") + "\r\n");
-        }
-
-        private void LogSlave(string Text)
-        {
-            txtSlave.AppendText((Text ?? "") + "\r\n");
         }
 
         private void btnGetTime_Click(object sender, EventArgs e)
@@ -61,13 +55,12 @@ namespace I2CTestHarness
             running = true;
             lblStatus.Text = "Running...";
             Application.DoEvents();
-            #if DEBUG
             if (!first)
             {
                 txtMaster.AppendText("--------------------------------\r\n");
                 txtSlave.AppendText( "--------------------------------\r\n");
+                txtBus.AppendText("--------------------------------\r\n");
             }
-            #endif
             first = false;
             bool success = true;
             Master.CMD_START();                                      // Start

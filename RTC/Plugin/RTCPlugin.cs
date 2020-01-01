@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Plugin;
+using Plugins.RTC.Debug;
 using RTC.I2C;
 
 namespace Plugins.RTC.Plugin
@@ -18,18 +19,20 @@ namespace Plugins.RTC.Plugin
         private I2CMaster Master;
         private I2CSlave DS1307;
         private Settings Settings;
-        private FileLogger MasterLogger;
-        private FileLogger SlaveLogger;
+        private ILogger BusLogger;
+        private ILogger MasterLogger;
+        private ILogger SlaveLogger;
 
         public List<sIO> Init(iCSpect _CSpect)
         {
             CSpect = _CSpect;
-            Bus = new I2CBus();
             Settings = Settings.Load();
+            BusLogger = new FileLogger(Settings, LogTargets.Bus);
             MasterLogger = new FileLogger(Settings, LogTargets.Master);
             SlaveLogger = new FileLogger(Settings, LogTargets.Slave);
-            Master = new I2CMaster(Bus, LogMaster);
-            DS1307 = new DS1307(Bus, LogSlave);
+            Bus = new I2CBus(BusLogger);
+            Master = new I2CMaster(Bus, MasterLogger);
+            DS1307 = new DS1307(Bus, SlaveLogger);
             Bus.Start();
             var ports = new List<sIO>();
             ports.Add(new sIO(PORT_SCL, eAccess.Port_Read));
@@ -79,12 +82,12 @@ namespace Plugins.RTC.Plugin
 
         private void LogMaster(string Text)
         {
-            MasterLogger.WriteLine(Text);
+            MasterLogger.AppendLine(Text);
         }
 
         private void LogSlave(string Text)
         {
-            SlaveLogger.WriteLine(Text);
+            SlaveLogger.AppendLine(Text);
         }
     }
 }
