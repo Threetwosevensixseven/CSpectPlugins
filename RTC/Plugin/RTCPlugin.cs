@@ -17,11 +17,17 @@ namespace Plugins.RTC.Plugin
         private I2CBus Bus;
         private I2CMaster Master;
         private I2CSlave DS1307;
+        private Settings Settings;
+        private FileLogger MasterLogger;
+        private FileLogger SlaveLogger;
 
         public List<sIO> Init(iCSpect _CSpect)
         {
             CSpect = _CSpect;
             Bus = new I2CBus();
+            Settings = Settings.Load();
+            MasterLogger = new FileLogger(Settings, LogTargets.Master);
+            SlaveLogger = new FileLogger(Settings, LogTargets.Slave);
             Master = new I2CMaster(Bus, LogMaster);
             DS1307 = new DS1307(Bus, LogSlave);
             Bus.Start();
@@ -73,12 +79,12 @@ namespace Plugins.RTC.Plugin
 
         private void LogMaster(string Text)
         {
-            Debug.WriteLine(Text ?? "");
+            MasterLogger.WriteLine(Text);
         }
 
         private void LogSlave(string Text)
         {
-            Debug.WriteLine(Text ?? "");
+            SlaveLogger.WriteLine(Text);
         }
     }
 }

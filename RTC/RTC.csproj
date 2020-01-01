@@ -52,7 +52,10 @@
     <Compile Include="I2C\I2CSlave.cs" />
     <Compile Include="I2C\II2CDevice.cs" />
     <Compile Include="Plugin\Extensions.cs" />
+    <Compile Include="Plugin\FileLogger.cs" />
+    <Compile Include="Plugin\LogTargets.cs" />
     <Compile Include="Plugin\RTCPlugin.cs" />
+    <Compile Include="Plugin\Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
