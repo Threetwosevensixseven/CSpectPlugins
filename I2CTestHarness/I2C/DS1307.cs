@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,10 +22,16 @@ namespace I2CTestHarness.I2C
         private int regPointer;
         private int bytesSinceStart;
         private byte[] registers;
-
+        private bool enableClock;
+        private bool mode24Hour;
+        private bool clockUpdated;
+            
         public DS1307(I2CBus Bus, UpdateLogEventHandler LogCallback = null)
             : base(Bus, LogCallback)
         {
+            enableClock = true;
+            mode24Hour = false;
+            clockUpdated = false;
             transactionState = CommandStates.Stopped;
             registers = new byte[64];
             regPointer = -1;
@@ -57,17 +65,20 @@ namespace I2CTestHarness.I2C
                 Log("** RTC transaction started");
                 transactionState = NewState;
                 bytesSinceStart = 0;
+                CopyTimeToReg();
             }
             else if (transactionState == CommandStates.Started && NewState == CommandStates.Started)
             {
                 Log("** RTC transaction restarted");
                 transactionState = NewState;
                 bytesSinceStart = 0;
+                CopyTimeToReg();
             }
             else if (transactionState == CommandStates.Started && NewState == CommandStates.Stopped)
             {
                 Log("** RTC transaction stopped");
                 transactionState = NewState;
+                CopyRegToTime();
             }
         }
 
@@ -92,11 +103,106 @@ namespace I2CTestHarness.I2C
             else
             {
                 Log("** RTC write reg 0x" + regPointer.ToString("X2") + "=0x" + Byte.ToString("X2"));
+                if (regPointer >= 0 && regPointer <= 6)
+                    clockUpdated = true; // Set buffer dirty flag
                 registers[regPointer] = Byte;
                 IncreaseRegPointer();
             }
             bytesSinceStart++;
             return true;
+        }
+
+        private void CopyTimeToReg()
+        {
+            Log("** Copying current date/time to clock buffers...");
+            var now = DateTime.Now;
+            Log("** Freezing date/time at " + now.ToString("s"));
+            Debug.WriteLine("** Freezing clock buffers at " + now.ToString("s"));
+            string d;
+            if (mode24Hour)
+                d = now.ToString("ddMMyyHHmmss");
+            else
+                d = now.ToString("ddMMyyhhmmsst");
+            // Reg 0: Seconds (0..59)
+            registers[0] = Convert.ToByte(((((byte)d[10] - (byte)'0') * 16) + ((byte)d[11] - (byte)'0')) | (enableClock ? 0 : 128));
+            // Reg 1: Minutes (0..59)
+            registers[1] = Convert.ToByte((((byte)d[8] - (byte)'0') * 16) + ((byte)d[9] - (byte)'0'));
+            // Reg 2: Hours (0..24 or 0..12)
+            if (mode24Hour)
+                registers[2] = Convert.ToByte((((byte)d[6] - (byte)'0') * 16) + ((byte)d[7] - (byte)'0'));
+            else
+                registers[2] = Convert.ToByte(((((byte)d[6] - (byte)'0') * 16) + ((byte)d[7] - (byte)'0')) | 64 | (d[12] == 'P' ? 32 : 0));
+            // Reg 3: Day of week (Sun=1, Sat=7)
+            registers[3] = Convert.ToByte(now.DayOfWeek + 1);
+            // Reg 4: Day of month aka Date (1..31)
+            registers[4] = Convert.ToByte((((byte)d[0] - (byte)'0') * 16) + ((byte)d[1] - (byte)'0'));
+            // Reg 5: Month (1..12)
+            registers[5] = Convert.ToByte((((byte)d[2] - (byte)'0') * 16) + ((byte)d[3] - (byte)'0'));
+            // Reg 6: Year (0.99)
+            registers[6] = Convert.ToByte((((byte)d[4] - (byte)'0') * 16) + ((byte)d[5] - (byte)'0'));
+            // Reset buffer dirty flag
+            clockUpdated = false;
+            clockUpdated = true;
+        }
+
+        private void CopyRegToTime()
+        {
+            if (!clockUpdated)
+            {
+                Log("** Clock buffers have not changed");
+                return;
+            }
+            Log("** Clock buffers have changed, updating clock...");
+            // Reg 6: Year (0.99)
+            string d = "20"
+                + (char)(((registers[6] >> 4) & 15) + '0')
+                + (char)((registers[6] & 15) + '0') + '-'
+            // Reg 5: Month (1..12)
+                + (char)(((registers[5] >> 4) & 15) + '0')
+                + (char)((registers[5] & 15) + '0') + '-'
+            // Reg 4: Day of month aka Date (1..31)
+                + (char)(((registers[4] >> 4) & 15) + '0')
+                + (char)((registers[4] & 15) + '0') + "T";
+            // Reg 3: Day of week (Sun=1, Sat=7) - copy set this, as it's not really a property of the date
+            // Reg 2: Hours (0..24 or 0..12)
+            bool newMode24Hour = (registers[2] & 64) == 0;
+            string h;
+            if (newMode24Hour)
+            {
+                h = ((char)(((registers[2] >> 4) & 15) + '0')).ToString()
+                + (char)((registers[2] & 15) + '0');
+            }
+            else
+            {
+                bool pm = (registers[2] & 32) != 0;
+                h = ((char)(((registers[2] >> 4) & 1) + '0')).ToString()
+                + (char)((registers[2] & 15) + '0');
+                if ((registers[2] & 32) != 0) // pm
+                {
+                    int hh;
+                    int.TryParse(h, out hh);
+                    h = (hh + 12).ToString("D2");
+                }
+            }
+            d += h + ':'
+            // Reg 1: Minutes (0..59)
+                + (char)(((registers[1] >> 4) & 15) + '0')
+                + (char)((registers[1] & 15) + '0') + ":"
+            // Reg 0: Seconds (0..59)
+                + (char)(((registers[0] >> 4) & 7) + '0')
+                + (char)((registers[0] & 15) + '0');
+            bool enableClock = (registers[2] & 128) == 0;
+
+            DateTime newDate;
+            if (DateTime.TryParseExact(d, "s", CultureInfo.InvariantCulture, DateTimeStyles.None, out newDate))
+            {
+                Log("** Updating date/time to " + newDate.ToString("s"));
+            }
+            else
+            {
+                Log("** Ignoring invalid date/time " + d);
+            }
+            clockUpdated = false;
         }
     }
 }

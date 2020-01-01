@@ -123,17 +123,18 @@ namespace I2CTestHarness.I2C
                 lastState = currentState;
                 currentState = CommandStates.Started;
                 Log("State: " + currentState.ToString());
+                OnTransactionChanged(CommandStates.Started);
             }
             else if (currentState == CommandStates.TransferringByte && OldSCL && NewSCL && lastSDA && !NewSDA)
             {
                 Log("Rx CMD_START");
-                OnTransactionChanged(CommandStates.Started);
                 justStarted = true;
                 justStopped = justAckNacked = false;
                 bytesSinceStart = 0;
                 lastState = currentState;
                 currentState = CommandStates.Started;
                 Log("State: " + currentState.ToString());
+                OnTransactionChanged(CommandStates.Started);
             }
 
             // Process CMD_STOP
@@ -142,12 +143,12 @@ namespace I2CTestHarness.I2C
             else if ((currentState == CommandStates.Started || currentState == CommandStates.TransferringByte) && NewSCL && lastSCL && !lastSDA && NewSDA)
             {
                 Log("Rx CMD_STOP");
-                OnTransactionChanged(CommandStates.Stopped);
                 justStopped = true;
                 justStarted = justAckNacked = false;
                 lastState = currentState;
                 currentState = CommandStates.Stopped;
                 Log("State: " + currentState.ToString());
+                OnTransactionChanged(CommandStates.Stopped);
             }
 
             // Receive data bit
@@ -215,12 +216,12 @@ namespace I2CTestHarness.I2C
                             //    Debugger.Break();
                             Log("Data address 0x" + (currentByte >> 1).ToString("X2") + " matches slave address");
                             Log("Accepting data " + currentDirection.ToString().ToUpper() + "s to " + DeviceName);
-                            OnTransactionChanged(CommandStates.Started);
                             SendACK(); // Send an ACK to participate in the rest of the transaction
                             bytesSinceStart++;
                             lastState = currentState;
                             currentState = CommandStates.Started;
                             Log("State: " + currentState.ToString());
+                            OnTransactionChanged(CommandStates.Started);
                         }
                         else
                         {
@@ -230,6 +231,7 @@ namespace I2CTestHarness.I2C
                             lastState = currentState;
                             currentState = CommandStates.Stopped;
                             Log("State: " + currentState.ToString());
+                            OnTransactionChanged(CommandStates.Stopped);
                         }
                     }
                     else
@@ -260,6 +262,7 @@ namespace I2CTestHarness.I2C
                         justAckNacked = justStarted = true;
                         justStopped = false;
                         Log("State: " + currentState.ToString());
+                        OnTransactionChanged(CommandStates.Started);
                     }
                     else
                     {
@@ -270,6 +273,7 @@ namespace I2CTestHarness.I2C
                         justAckNacked = justStopped = true;
                         justStarted = false;
                         Log("State: " + currentState.ToString());
+                        OnTransactionChanged(CommandStates.Stopped);
                     }
                 }
             }
