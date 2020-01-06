@@ -19,8 +19,8 @@ CSpect is a ZXSpectrum emulator by Mike Dailly.
 Download the latest version [here](http://www.cspect.org/). These plugins only work with v2.12.1 or newer.
 
 ## Copyright and Licence
-All plugins except i2C_Sample are copyright © 2019 Robin Verhagen-Guest, and are licensed under [Apache 2.0](https://github.com/Threetwosevensixseven/CSpectPlugins/blob/master/LICENSE).
+All plugins except i2C_Sample are copyright © 2019-2020 Robin Verhagen-Guest, and are licensed under [Apache 2.0](https://github.com/Threetwosevensixseven/CSpectPlugins/blob/master/LICENSE).
 
-CSpect and the i2C_Sample example project are copyright © 1998-2019 Mike Dailly All rights reserved.
+CSpect and the i2C_Sample example project are copyright © 1998-2020 Mike Dailly All rights reserved.
 
 ZX Spectrum Next is a trademark of SpecNext Ltd.
