@@ -31,6 +31,10 @@ namespace RTC.I2C
         private bool justStarted;
         private bool justStopped;
         private bool justAckNacked;
+        private List<bool> historySCL;
+        private List<bool> historySDA;
+        private int specialStarting;
+        private int specialStopping;
 
         public I2CSlave(I2CBus Bus, ILogger Logger = null)
         {
@@ -41,6 +45,11 @@ namespace RTC.I2C
             Log("State: " + currentState.ToString());
             justStarted = justAckNacked = false;
             currentDirection = DataDirection.Write;
+            historySCL = new List<bool>();
+            historySDA = new List<bool>();
+            specialStarting = 0;
+            specialStopping = 0;
+
         }
 
         public abstract byte SlaveAddress { get; }
@@ -106,14 +115,69 @@ namespace RTC.I2C
 
         public void Tick(bool NewSDA, bool NewSCL, bool OldSDA, bool OldSCL)
         {
+            historySCL.Insert(0, NewSCL);
+            historySDA.Insert(0, NewSDA);
             lastSDA = OldSDA;
             lastSCL = OldSCL;
             LogBus(NewSDA, NewSCL);
 
+            if (currentState == CommandStates.TransferringByte || currentState == CommandStates.Started)
+            {
+                if (specialStarting <= 0 && NewSCL)
+                    specialStarting = 1;
+                else if (specialStarting == 1 && NewSDA)
+                    specialStarting = 2;
+                else if (specialStarting == 2 && !NewSDA)
+                    specialStarting = 3;
+                else if (specialStarting == 3 && !NewSCL)
+                    specialStarting = 4;
+                else
+                    specialStarting = 0;
+            }
+
+            if (currentState == CommandStates.TransferringByte || currentState == CommandStates.Started)
+            {
+                if (specialStopping <= 0 && !NewSDA)
+                    specialStopping = 1;
+                else if (specialStopping == 1 && NewSCL)
+                    specialStopping = 2;
+                else if (specialStopping == 2 && NewSDA)
+                    specialStopping = 3;
+                else
+                    specialStopping = 0;
+            }
+
+
             // Process CMD_START
             // A change in the state of the data line, from HIGH to LOW, while the clock is HIGH, defines a START condition.
             // Trigger on falling edge of data
-            if (!justStopped && (currentState == CommandStates.Stopped || currentState == CommandStates.Started) && NewSCL && lastSDA && !NewSDA)
+            if (specialStopping == 3 && specialStarting < 2)
+            {
+                specialStopping = 0;
+                specialStarting = 0;
+                Log("Rx CMD_STOP");
+                justStopped = true;
+                justStarted = justAckNacked = false;
+                lastState = currentState;
+                currentDirection = DataDirection.Write;
+                currentState = CommandStates.Stopped;
+                Log("State: " + currentState.ToString());
+                OnTransactionChanged(CommandStates.Stopped);
+            }
+            if (specialStarting == 4)
+            {
+                Log("Rx CMD_START");
+                specialStopping = 0;
+                specialStarting = 0;
+                justStarted = true;
+                justStopped = justAckNacked = false;
+                bytesSinceStart = 0;
+                lastState = currentState;
+                currentState = CommandStates.Started;
+                Log("State: " + currentState.ToString());
+                OnTransactionChanged(CommandStates.Started);
+            }
+            else if (!justStopped && (currentState == CommandStates.Stopped || currentState == CommandStates.Started) && NewSCL && lastSDA && !NewSDA)
             {
                 Log("Rx CMD_START");
                 justStarted = true;
@@ -124,7 +188,7 @@ namespace RTC.I2C
                 Log("State: " + currentState.ToString());
                 OnTransactionChanged(CommandStates.Started);
             }
-            else if (currentState == CommandStates.TransferringByte && OldSCL && NewSCL && lastSDA && !NewSDA)
+            else if ((currentState == CommandStates.TransferringByte || currentState == CommandStates.Started) && OldSCL && NewSCL && lastSDA && !NewSDA)
             {
                 Log("Rx CMD_START");
                 justStarted = true;
@@ -139,17 +203,17 @@ namespace RTC.I2C
             // Process CMD_STOP
             // A change in the state of the data line, from LOW to HIGH, while the clock line is HIGH, defines a STOP condition.
             // Trigger on rising edge of data
-            else if ((currentState == CommandStates.Started || currentState == CommandStates.TransferringByte) && NewSCL && lastSCL && !lastSDA && NewSDA)
-            {
-                Log("Rx CMD_STOP");
-                justStopped = true;
-                justStarted = justAckNacked = false;
-                lastState = currentState;
-                currentDirection = DataDirection.Write;
-                currentState = CommandStates.Stopped;
-                Log("State: " + currentState.ToString());
-                OnTransactionChanged(CommandStates.Stopped);
-            }
+            //else if (currentState == CommandStates.TransferringByte && NewSCL && lastSCL && !lastSDA && NewSDA)
+            //{
+            //    Log("Rx CMD_STOP");
+            //    justStopped = true;
+            //    justStarted = justAckNacked = false;
+            //    lastState = currentState;
+            //    currentDirection = DataDirection.Write;
+            //    currentState = CommandStates.Stopped;
+            //    Log("State: " + currentState.ToString());
+            //    OnTransactionChanged(CommandStates.Stopped);
+            //}
 
             // Receive data bit
             // Sample data, triggering on falling edge of clock

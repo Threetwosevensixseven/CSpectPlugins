@@ -32,9 +32,10 @@
             this.btnGetTime = new System.Windows.Forms.Button();
             this.pnlLogs = new System.Windows.Forms.TableLayoutPanel();
             this.txtMaster = new System.Windows.Forms.TextBox();
+            this.txtBus = new System.Windows.Forms.TextBox();
             this.txtSlave = new System.Windows.Forms.TextBox();
             this.lblStatus = new System.Windows.Forms.Label();
-            this.txtBus = new System.Windows.Forms.TextBox();
+            this.btnRtcSys = new System.Windows.Forms.Button();
             this.pnlLogs.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -64,7 +65,7 @@
             this.pnlLogs.Name = "pnlLogs";
             this.pnlLogs.RowCount = 1;
             this.pnlLogs.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.pnlLogs.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.pnlLogs.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 265F));
             this.pnlLogs.Size = new System.Drawing.Size(885, 265);
             this.pnlLogs.TabIndex = 1;
             // 
@@ -81,6 +82,20 @@
             this.txtMaster.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtMaster.Size = new System.Drawing.Size(288, 259);
             this.txtMaster.TabIndex = 1;
+            // 
+            // txtBus
+            // 
+            this.txtBus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.txtBus.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtBus.Font = new System.Drawing.Font("Lucida Console", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtBus.ForeColor = System.Drawing.Color.Chartreuse;
+            this.txtBus.Location = new System.Drawing.Point(297, 3);
+            this.txtBus.Multiline = true;
+            this.txtBus.Name = "txtBus";
+            this.txtBus.ReadOnly = true;
+            this.txtBus.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtBus.Size = new System.Drawing.Size(289, 259);
+            this.txtBus.TabIndex = 0;
             // 
             // txtSlave
             // 
@@ -99,30 +114,27 @@
             // lblStatus
             // 
             this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(93, 17);
+            this.lblStatus.Location = new System.Drawing.Point(174, 17);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(0, 13);
             this.lblStatus.TabIndex = 1;
             // 
-            // txtBus
+            // btnRtcSys
             // 
-            this.txtBus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.txtBus.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtBus.Font = new System.Drawing.Font("Lucida Console", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtBus.ForeColor = System.Drawing.Color.Chartreuse;
-            this.txtBus.Location = new System.Drawing.Point(297, 3);
-            this.txtBus.Multiline = true;
-            this.txtBus.Name = "txtBus";
-            this.txtBus.ReadOnly = true;
-            this.txtBus.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtBus.Size = new System.Drawing.Size(289, 259);
-            this.txtBus.TabIndex = 0;
+            this.btnRtcSys.Location = new System.Drawing.Point(93, 12);
+            this.btnRtcSys.Name = "btnRtcSys";
+            this.btnRtcSys.Size = new System.Drawing.Size(75, 23);
+            this.btnRtcSys.TabIndex = 2;
+            this.btnRtcSys.Text = "RTC.SYS";
+            this.btnRtcSys.UseVisualStyleBackColor = true;
+            this.btnRtcSys.Click += new System.EventHandler(this.btnRtcSys_Click);
             // 
             // TestHarnessForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(909, 318);
+            this.Controls.Add(this.btnRtcSys);
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.pnlLogs);
             this.Controls.Add(this.btnGetTime);
@@ -146,6 +158,7 @@
         private System.Windows.Forms.TextBox txtSlave;
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.TextBox txtBus;
+        private System.Windows.Forms.Button btnRtcSys;
     }
 }
 

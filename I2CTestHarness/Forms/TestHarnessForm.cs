@@ -95,5 +95,32 @@ namespace I2CTestHarness
                 bytes.Add(Master.CMD_RX(i == Count - 1));
             return bytes.ToArray();
         }
+
+        private void btnRtcSys_Click(object sender, EventArgs e)
+        {
+            if (running) return;
+            running = true;
+            lblStatus.Text = "Running...";
+            Application.DoEvents();
+            if (!first)
+            {
+                txtMaster.AppendText("--------------------------------\r\n");
+                txtSlave.AppendText("--------------------------------\r\n");
+                txtBus.AppendText("--------------------------------\r\n");
+            }
+            first = false;
+            bool success = true;
+            Master.CMD_START();                                      // Start
+            success = success && Master.CMD_TX(DS1307.WriteAddress); // Write DS1307
+            success = success && Master.CMD_TX(0x3e);                // Set reg = 62 (Z)
+            Master.CMD_START();                                      // Start
+            success = success && Master.CMD_TX(DS1307.ReadAddress);  // Read DS1307
+            var bytes = ReadBytes(1);
+            if (success)
+                lblStatus.Text = "Success: RTC.SYS";
+            else
+                lblStatus.Text = "Failed, received NACK";
+            running = false;
+        }
     }
 }

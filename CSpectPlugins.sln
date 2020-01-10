@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RTC", "RTC\RTC.csproj", "{0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "I2CTestHarness", "I2CTestHarness\I2CTestHarness.csproj", "{3708E183-3E15-4D20-8726-46C452B951C7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UARTForwarder", "UARTForwarder\UARTForwarder.csproj", "{B620589D-3613-40FB-ACFB-9C825D474D7F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{3708E183-3E15-4D20-8726-46C452B951C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3708E183-3E15-4D20-8726-46C452B951C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3708E183-3E15-4D20-8726-46C452B951C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B620589D-3613-40FB-ACFB-9C825D474D7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B620589D-3613-40FB-ACFB-9C825D474D7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B620589D-3613-40FB-ACFB-9C825D474D7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B620589D-3613-40FB-ACFB-9C825D474D7F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -56,8 +56,10 @@ namespace RTC.I2C
         {
             // A change in the state of the data line, from HIGH to LOW, while the clock is HIGH, defines a START condition.
             Log("Tx CMD_START");
-            bus.SetSDA(this, true);
+            //bus.SetSDA(this, true);
+            //bus.SetSCL(this, true);
             bus.SetSCL(this, true);
+            bus.SetSDA(this, true);
             bus.SetSDA(this, false); // Falling data edge should trigger slaves
             bus.SetSCL(this, false);
             return true; // Allows chaining commands together with lazy &&
@@ -99,6 +101,7 @@ namespace RTC.I2C
         public Byte CMD_RX(bool LastByte = false)
         {
             Log("Tx CMD_RX");
+            bus.SetSDA(this, false); // Free data line
             byte val = 0;
             for (int i = 0; i < 8; i++)
             {
