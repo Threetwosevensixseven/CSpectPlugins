@@ -48,8 +48,14 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerialPort.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="UARTReplacement_Device.cs" />
     <Compile Include="UARTTargets.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="UARTReplacement.dll.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

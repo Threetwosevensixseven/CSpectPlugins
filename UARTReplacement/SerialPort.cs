@@ -7,13 +7,21 @@ using System.Threading.Tasks;
 
 namespace Plugins.UARTReplacement
 {
+    /// <summary>
+    /// This class encapsulates a .NET serial port, together with the logic to change the baud
+    /// according to instructions received from ythe Next UART I/O ports.
+    /// </summary>
     public class SerialPort : IDisposable
     {
         private System.IO.Ports.SerialPort port;
         private int clock = 27000000; // CSpect defaults to HDMI timings
         private int prescaler = 234;  // Next baud defaults to 115200 (more accurately 115384 with integer division)
 
-        public SerialPort(string PortName, int BaudRate)
+        /// <summary>
+        /// Creates an instance of the SerialPort class.
+        /// </summary>
+        /// <param name="PortName">The serial port name to bind to, for example COM1.</param>
+        public SerialPort(string PortName)
         {
             try
             {
@@ -35,6 +43,13 @@ namespace Plugins.UARTReplacement
             }
         }
 
+        /// <summary>
+        /// Writes a specified number of bytes to the serial port using data from a buffer.
+        /// </summary>
+        /// <param name="buffer">The byte array that contains the data to write to the port.</param>
+        /// <param name="offset">The zero-based byte offset in the buffer parameter at which to begin 
+        /// copying bytes to the port.</param>
+        /// <param name="count">The number of bytes to write.</param>
         public void Write(byte[] buffer, int offset, int count)
         {
             if (port != null)

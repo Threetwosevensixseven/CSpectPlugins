@@ -15,10 +15,10 @@ namespace Plugins.UARTReplacement
         private const ushort PORT_UART_CONTROL = 0x153b;
         private const byte REG_VIDEO_TIMING = 0x11;
 
-
         private iCSpect CSpect;
         private UARTTargets Target;
         private SerialPort espPort;
+        private Settings settings;
         private bool UART_RX_Internal;
         private bool UART_TX_Internal;
         private Thread espThread;
@@ -33,7 +33,8 @@ namespace Plugins.UARTReplacement
             sync = new object();
             CSpect = _CSpect;
             Target = UARTTargets.ESP;
-            espPort = new SerialPort("COM5", 115200);
+            settings = Settings.Load();
+            espPort = new SerialPort(settings.PortName);
             UART_RX_Internal = false;
             UART_TX_Internal = false;
             threadCancel = false;
