@@ -7,6 +7,9 @@ Download the latest release [here](https://github.com/Threetwosevensixseven/CSpe
 ### UARTLogger
 A configurable logger for the Next ESP and Pi UARTs emulated by CSpect. See its [wiki page](https://github.com/Threetwosevensixseven/CSpectPlugins/wiki/UART-Logger) for installation and configuration details.
 
+### UARTReplacement
+A buffered UART replacing the ESP UART in CSpect. This one responds to baud rate changes written to the Next's UART I/O ports, using prescaler calculations taking into account the current video timing. See its [wiki page](https://github.com/Threetwosevensixseven/CSpectPlugins/wiki/UART-Replacement) for installation and configuration details.
+
 ### RTC
 A configurable RTC provider to supply your PC's date/time over the [I2C](https://en.wikipedia.org/wiki/I%C2%B2C) bus, emulating the [DS1307](https://github.com/Threetwosevensixseven/CSpectPlugins/blob/master/RTC/Docs/ds1307-1177772.pdf) RTC chip. This will make CSpect work with `.date`, `.time` and `RTC.SYS`, and display the time on the NextZXOS menus. Work in progress, coming soon!
 
