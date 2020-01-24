@@ -12,7 +12,7 @@ A buffered UART replacing the internal CSpect emulated [ESP](https://wiki.specne
 
 The replacement UART writes binary bytes to the serial port, whereas the internal CSpect UART constrains bytes to ASCII characters `0x00..0x3f`. This doesn't matter so much for sending AT commands to the ESP-01, but programming the ESP with [low-level SLIP commands](https://github.com/espressif/esptool/wiki/Serial-Protocol) requires a binary UART.
 
-THe UART also responds to baud rate changes written to the [Next](https://www.specnext.com/about/)'s UART I/O ports, using prescaler calculations taking into account the current video timing.
+THe UART dynamically responds to baud rate changes written to the [Next](https://www.specnext.com/about/)'s UART I/O ports, using prescaler calculations taking into account the current video timing.
 
 
 ### RTC
