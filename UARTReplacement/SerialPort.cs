@@ -81,10 +81,10 @@ namespace Plugins.UARTReplacement
 
         /// <summary>
         /// Given a raw byte read from REG_VIDEO_TIMING, and another raw byte written to PORT_UART_CONTROL,
-        /// updates the clock and potentially also bits 17:13 of the prescaler.
+        /// updates the clock and potentially also bits 16:14 of the prescaler.
         /// </summary>
         /// <param name="BaudByte">Read from REG_VIDEO_TIMING, used to update the clock.</param>
-        /// <param name="VideoTimingByte">Written to PORT_UART_CONTROL, used to update bits 17:13 of the prescaler.</param>
+        /// <param name="VideoTimingByte">Written to PORT_UART_CONTROL, used to update bits 16:14 of the prescaler.</param>
         /// <returns></returns>
         public int SetPrescalerAndClock(byte BaudByte, byte VideoTimingByte)
         {
@@ -123,15 +123,15 @@ namespace Plugins.UARTReplacement
             }
             if ((BaudByte & 0x10) == 0x10)
             {
-                // Get bits 14..17 of the new prescaler
+                // Get bits 14..16 of the new prescaler
                 int newBits = (BaudByte & 0x07) << 14;
-                // Mask out everything of the existing prescaler except bits 14..17
+                // Mask out everything of the existing prescaler except bits 14..16
                 int oldBits = prescaler & 0x3fff;
                 // Combine the two sets of bits
                 prescaler = oldBits | newBits;
                 port.BaudRate = Baud;
                 LogClock(false);
-                LogPrescaler("17:14");
+                LogPrescaler("16:14");
             }
             else
             {
