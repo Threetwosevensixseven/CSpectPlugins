@@ -16,6 +16,7 @@ namespace Plugins.UARTReplacement
         private System.IO.Ports.SerialPort port;
         private int clock = 27000000; // CSpect defaults to HDMI timings
         private int prescaler = 234;  // Next baud defaults to 115200 (more accurately 115384 with integer division)
+        private bool enableEspGpio = false;
 
         /// <summary>
         /// Creates an instance of the SerialPort class.
@@ -187,6 +188,48 @@ namespace Plugins.UARTReplacement
                 if (prescaler == 0)
                     return 0;
                 return Convert.ToInt32(Math.Truncate((Convert.ToDecimal(clock) / prescaler)));
+            }
+        }
+
+        public void Reset(byte ResetByte)
+        {
+            // bit 7 = Indicates the reset signal to the expansion bus and esp is asserted
+            bool resetESP = (ResetByte & 128) == 128;
+            if (resetESP)
+            {
+                Debug.WriteLine("RTS:       " + resetESP + " (drive /RST low)");
+                port.RtsEnable = true;
+            }
+            else
+            {
+                Debug.WriteLine("RTS:       " + resetESP + " (release /RST high)");
+                port.RtsEnable = false;
+            }
+        }
+
+        public void EnableEspGpio(byte EnableByte)
+        {
+            // bit 0 = GPIO0 output enable
+            bool enableEspGpio = (EnableByte & 1) == 1;
+            Debug.WriteLine("EnableGPIO:" + enableEspGpio);
+        }
+
+        public void SetEspGpio(byte GpioByte)
+        {
+            if (enableEspGpio)
+                return;
+
+            // bit 0 = Read / Write ESP GPIO0 (hard reset = 1)
+            bool gpio0 = !((GpioByte & 1) == 1);
+            if (gpio0)
+            {
+                Debug.WriteLine("DTR:       " + gpio0 + " (drive /GPIO0 low)");
+                port.DtrEnable = true;
+            }
+            else
+            {
+                Debug.WriteLine("DTR:       " + gpio0 + " (release /GPIO0 high)");
+                port.DtrEnable = false;
             }
         }
 

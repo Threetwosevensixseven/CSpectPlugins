@@ -13,7 +13,10 @@ namespace Plugins.UARTReplacement
         private const ushort PORT_UART_TX = 0x133b;
         private const ushort PORT_UART_RX = 0x143b;
         private const ushort PORT_UART_CONTROL = 0x153b;
+        private const byte REG_RESET = 0x02;
         private const byte REG_VIDEO_TIMING = 0x11;
+        private const byte REG_ESP_GPIO_ENABLE = 0xa8;
+        private const byte REG_ESP_GPIO = 0xa9;
 
         private iCSpect CSpect;
         private UARTTargets Target;
@@ -49,6 +52,9 @@ namespace Plugins.UARTReplacement
             ports.Add(new sIO(PORT_UART_RX, eAccess.Port_Write));
             ports.Add(new sIO(PORT_UART_RX, eAccess.Port_Read));
             ports.Add(new sIO(PORT_UART_CONTROL, eAccess.Port_Write));
+            ports.Add(new sIO(REG_RESET, eAccess.NextReg_Write));
+            ports.Add(new sIO(REG_ESP_GPIO_ENABLE, eAccess.NextReg_Write));
+            ports.Add(new sIO(REG_ESP_GPIO, eAccess.NextReg_Write));
             return ports;
         }
 
@@ -95,6 +101,18 @@ namespace Plugins.UARTReplacement
                         return true;
                     }
                     return false;
+                case REG_RESET:
+                    espPort.Reset(_value);
+                    // Always handle this nextreg
+                    return true;
+                case REG_ESP_GPIO_ENABLE:
+                    espPort.EnableEspGpio(_value);
+                    // Always handle this nextreg
+                    return true;
+                case REG_ESP_GPIO:
+                    espPort.SetEspGpio(_value);
+                    // Always handle this nextreg
+                    return true;
             }
             // Don't handle any writes we didn't register for
             return false;
