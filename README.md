@@ -24,7 +24,7 @@ The sample plugin included with CSpect.
 ## CSpect
 CSpect is a ZXSpectrum emulator by Mike Dailly.
 
-Download the latest version [here](http://www.cspect.org/). These plugins only work with v2.12.1 or newer.
+Download the latest version [here](http://www.cspect.org/). These plugins only work with v2.12.5 or newer.
 
 ## Copyright and Licence
 All plugins except i2C_Sample are copyright © 2019-2020 Robin Verhagen-Guest, and are licensed under [Apache 2.0](https://github.com/Threetwosevensixseven/CSpectPlugins/blob/master/LICENSE).

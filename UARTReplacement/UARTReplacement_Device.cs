@@ -211,6 +211,10 @@ namespace Plugins.UARTReplacement
                 Thread.Sleep(1);
             }
         }
+
+        public void Tick()
+        {
+        }
     }
 }
 

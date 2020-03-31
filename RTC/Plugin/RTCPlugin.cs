@@ -89,5 +89,9 @@ namespace Plugins.RTC.Plugin
         {
             SlaveLogger.AppendLine(Text);
         }
+
+        public void Tick()
+        {
+        }
     }
 }

@@ -93,5 +93,9 @@ namespace Plugins.UARTLogger
             _isvalid = false;
             return 0xff;
         }
+
+        public void Tick()
+        {
+        }
     }
 }

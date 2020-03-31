@@ -89,5 +89,9 @@ namespace i2C_Sample
             _isvalid = false;
             return 0;
         }
+
+        public void Tick()
+        {
+        }
     }
 }
