@@ -31,4 +31,6 @@ All plugins except i2C_Sample are copyright © 2019-2020 Robin Verhagen-Guest, a
 
 CSpect and the i2C_Sample example project are copyright © 1998-2020 Mike Dailly All rights reserved.
 
+[hdfmonkey](https://github.com/gasman/hdfmonkey) is copyright © Matt Westcott 2010, and is licensed under [GPL-3.0](https://github.com/gasman/hdfmonkey/blob/master/COPYING).
+
 ZX Spectrum Next is a trademark of SpecNext Ltd.
