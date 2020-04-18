@@ -14,6 +14,8 @@ The replacement UART writes binary bytes to the serial port, whereas the interna
 
 THe UART dynamically responds to baud rate changes written to the [Next](https://www.specnext.com/about/)'s UART I/O ports, using prescaler calculations taking into account the current video timing.
 
+### RTCSys
+A simple date/time plugin which works in tandem with a custom RTC.SYS to provide date/time on the NextZXOS main menu, and for the M_GETDATE and IDE_RTC API calls.
 
 ### RTC
 A configurable RTC provider to supply your PC's date/time over the [I2C](https://en.wikipedia.org/wiki/I%C2%B2C) bus, emulating the [DS1307](https://github.com/Threetwosevensixseven/CSpectPlugins/blob/master/RTC/Docs/ds1307-1177772.pdf) RTC chip. This will make CSpect work with `.date`, `.time` and `RTC.SYS`, and display the time on the NextZXOS menus. Work in progress, coming soon!
@@ -24,7 +26,7 @@ The sample plugin included with CSpect.
 ## CSpect
 CSpect is a ZXSpectrum emulator by Mike Dailly.
 
-Download the latest version [here](http://www.cspect.org/). These plugins only work with v2.12.5 or newer.
+Download the latest version [here](http://www.cspect.org/). These plugins only work with v2.12.20 or newer.
 
 ## Copyright and Licence
 All plugins except i2C_Sample are copyright © 2019-2020 Robin Verhagen-Guest, and are licensed under [Apache 2.0](https://github.com/Threetwosevensixseven/CSpectPlugins/blob/master/LICENSE).
