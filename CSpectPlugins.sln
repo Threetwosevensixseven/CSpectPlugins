@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "I2CTestHarness", "I2CTestHa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UARTReplacement", "UARTReplacement\UARTReplacement.csproj", "{B620589D-3613-40FB-ACFB-9C825D474D7F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RTCSys", "RTCSys\RTCSys.csproj", "{DF5AC599-1EE2-49AB-94E5-F44A842DB4F7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{B620589D-3613-40FB-ACFB-9C825D474D7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B620589D-3613-40FB-ACFB-9C825D474D7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B620589D-3613-40FB-ACFB-9C825D474D7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF5AC599-1EE2-49AB-94E5-F44A842DB4F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF5AC599-1EE2-49AB-94E5-F44A842DB4F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF5AC599-1EE2-49AB-94E5-F44A842DB4F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF5AC599-1EE2-49AB-94E5-F44A842DB4F7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
