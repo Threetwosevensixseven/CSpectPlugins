@@ -36,7 +36,7 @@ namespace RTCSys
             return ports;
         }
 
-        public byte Read(eAccess _type, int _address, out bool _isvalid)
+        public byte Read(eAccess _type, int _address, int _id, out bool _isvalid)
         {
             if (_type == eAccess.NextReg_Read && _address == REG_00_MACHINE_ID)
             {
@@ -115,7 +115,7 @@ namespace RTCSys
             return 0xff;
         }
 
-        public bool Write(eAccess _type, int _port, byte _value)
+        public bool Write(eAccess _type, int _port, int _id, byte _value)
         {
             if (_type == eAccess.NextReg_Write && _port == REG_00_MACHINE_ID)
             {
@@ -158,6 +158,15 @@ namespace RTCSys
         }
 
         public void Quit()
+        {
+        }
+
+        public bool KeyPressed(int _id)
+        {
+            return false;
+        }
+
+        public void Reset()
         {
         }
     }

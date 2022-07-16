@@ -60,7 +60,7 @@ namespace i2C_Sample
         /// <param name="_port">the port being written to</param>
         /// <param name="_value">the value to write</param>
         // **********************************************************************
-        public bool Write(eAccess _type, int _port, byte _value)
+        public bool Write(eAccess _type, int _port, int _id, byte _value)
         {
             switch (_port)
             {
@@ -79,7 +79,7 @@ namespace i2C_Sample
         /// <param name="_isvalid"></param>
         /// <returns></returns>
         // **********************************************************************
-        public byte Read(eAccess _type, int _port, out bool _isvalid)
+        public byte Read(eAccess _type, int _port, int _id, out bool _isvalid)
         {
             switch (_port)
             {
@@ -91,6 +91,15 @@ namespace i2C_Sample
         }
 
         public void Tick()
+        {
+        }
+
+        public bool KeyPressed(int _id)
+        {
+            return false;
+        }
+
+        public void Reset()
         {
         }
     }

@@ -68,7 +68,7 @@ namespace Plugins.UARTReplacement
             }
         }
 
-        public bool Write(eAccess _type, int _port, byte _value)
+        public bool Write(eAccess _type, int _port, int _id, byte _value)
         {
             switch (_port)
             {
@@ -118,7 +118,7 @@ namespace Plugins.UARTReplacement
             return false;
         }
 
-        public byte Read(eAccess _type, int _port, out bool _isvalid)
+        public byte Read(eAccess _type, int _port, int _id, out bool _isvalid)
         {
             switch (_port)
             {
@@ -213,6 +213,15 @@ namespace Plugins.UARTReplacement
         }
 
         public void Tick()
+        {
+        }
+
+        public bool KeyPressed(int _id)
+        {
+            return false;
+        }
+
+        public void Reset()
         {
         }
     }
