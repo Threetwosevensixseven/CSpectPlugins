@@ -46,7 +46,7 @@ namespace Plugins.RTC.Plugin
         {
         }
 
-        public byte Read(eAccess _type, int _address, out bool _isvalid)
+        public byte Read(eAccess _type, int _address, int _id, out bool _isvalid)
         {
             // Only handle the two Next I/O ports corresponding to the I2C SCL and Data lines
             if (_type == eAccess.Port_Read && _address == PORT_SCL)
@@ -63,7 +63,7 @@ namespace Plugins.RTC.Plugin
             return 0;
         }
 
-        public bool Write(eAccess _type, int _port, byte _value)
+        public bool Write(eAccess _type, int _port, int _id, byte _value)
         {
             if (_type == eAccess.Port_Write && _port == PORT_SCL)
             {
@@ -91,6 +91,15 @@ namespace Plugins.RTC.Plugin
         }
 
         public void Tick()
+        {
+        }
+
+        public bool KeyPressed(int _id)
+        {
+            return false;
+        }
+
+        public void Reset()
         {
         }
     }
