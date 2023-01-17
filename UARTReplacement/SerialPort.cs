@@ -193,6 +193,7 @@ namespace Plugins.UARTReplacement
 
         public void Reset(byte ResetByte)
         {
+            if (port is null) return;
             // bit 7 = Indicates the reset signal to the expansion bus and esp is asserted
             bool resetESP = (ResetByte & 128) == 128;
             if (resetESP)
@@ -216,7 +217,7 @@ namespace Plugins.UARTReplacement
 
         public void SetEspGpio(byte GpioByte)
         {
-            if (enableEspGpio)
+            if (enableEspGpio || port is null)
                 return;
 
             // bit 0 = Read / Write ESP GPIO0 (hard reset = 1)
