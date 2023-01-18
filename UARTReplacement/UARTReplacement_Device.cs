@@ -224,6 +224,10 @@ namespace Plugins.UARTReplacement
         public void Reset()
         {
         }
+
+        public void OSTick()
+        {
+        }
     }
 }
 

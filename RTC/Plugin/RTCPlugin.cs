@@ -102,5 +102,9 @@ namespace Plugins.RTC.Plugin
         public void Reset()
         {
         }
+
+        public void OSTick()
+        {
+        }
     }
 }

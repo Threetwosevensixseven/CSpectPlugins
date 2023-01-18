@@ -106,5 +106,9 @@ namespace Plugins.UARTLogger
         public void Reset()
         {
         }
+
+        public void OSTick()
+        {
+        }
     }
 }

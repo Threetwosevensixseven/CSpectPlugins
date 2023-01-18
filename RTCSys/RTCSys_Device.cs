@@ -169,5 +169,9 @@ namespace RTCSys
         public void Reset()
         {
         }
+
+        public void OSTick()
+        {
+        }
     }
 }

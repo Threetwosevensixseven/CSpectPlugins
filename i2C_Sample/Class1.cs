@@ -102,5 +102,10 @@ namespace i2C_Sample
         public void Reset()
         {
         }
+
+        public void OSTick()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
