@@ -8,11 +8,28 @@ Download the latest release [here](https://github.com/Threetwosevensixseven/CSpe
 A configurable logger for the Next ESP and Pi UARTs emulated by CSpect. See its [wiki page](https://github.com/Threetwosevensixseven/CSpectPlugins/wiki/UART-Logger) for installation and configuration details.
 
 ### UARTReplacement
-A buffered UART replacing the internal CSpect emulated [ESP](https://wiki.specnext.dev/ESP8266-01) UART. See its [wiki page](https://github.com/Threetwosevensixseven/CSpectPlugins/wiki/UART-Replacement) for installation and configuration details.
+A buffered UART replacing the internal CSpect emulated [ESP](https://wiki.specnext.dev/ESP8266-01) and [Raspberry Pi Accelerator](https://wiki.specnext.dev/Pi:Main_Page) UARTs. See its [wiki page](https://github.com/Threetwosevensixseven/CSpectPlugins/wiki/UART-Replacement) for installation and configuration details.
 
-The replacement UART writes binary bytes to the serial port, whereas the internal CSpect UART constrains bytes to ASCII characters `0x00..0x3f`. This doesn't matter so much for sending AT commands to the ESP-01, but programming the ESP with [low-level SLIP commands](https://github.com/espressif/esptool/wiki/Serial-Protocol) requires a binary UART.
+The replacement UARTs write binary bytes to the serial port, whereas the internal CSpect UARTs constrain bytes to ASCII characters `0x00..0x3f`. This doesn't matter so much for sending AT commands to the ESP-01, but programming the ESP with [low-level SLIP commands](https://github.com/espressif/esptool/wiki/Serial-Protocol) requires a binary UART. Also the [NextPi] SUPervisor uses non-ASCII control bytes.
 
-THe UART dynamically responds to baud rate changes written to the [Next](https://www.specnext.com/about/)'s UART I/O ports, using prescaler calculations taking into account the current video timing.
+The UARTs dynamically respond to baud rate changes written to the [Next](https://www.specnext.com/about/)'s UART I/O ports, using prescaler calculations taking into account the current video timing.
+
+The UARTs also drive the serial [DTR](https://en.wikipedia.org/wiki/Data_Terminal_Ready)
+and
+[RTS](https://en.wikipedia.org/wiki/RS-232#RTS,_CTS,_and_RTR)
+lines in response to ESP 
+[RST](https://gitlab.com/SpectrumNext/ZX_Spectrum_Next_FPGA/-/blob/dad52d4a91e43850c55bc1e3c76cebfe45d49164/cores/zxnext/nextreg.txt#L48)
+and GPIO
+[enable](https://gitlab.com/SpectrumNext/ZX_Spectrum_Next_FPGA/-/blob/dad52d4a91e43850c55bc1e3c76cebfe45d49164/cores/zxnext/nextreg.txt#L927)
+and
+[control](https://gitlab.com/SpectrumNext/ZX_Spectrum_Next_FPGA/-/blob/dad52d4a91e43850c55bc1e3c76cebfe45d49164/cores/zxnext/nextreg.txt#L929)
+nextregs; and Pi GPIO
+[enable](https://gitlab.com/SpectrumNext/ZX_Spectrum_Next_FPGA/-/blob/dad52d4a91e43850c55bc1e3c76cebfe45d49164/cores/zxnext/nextreg.txt#L887)
+and
+[control](https://gitlab.com/SpectrumNext/ZX_Spectrum_Next_FPGA/-/blob/dad52d4a91e43850c55bc1e3c76cebfe45d49164/cores/zxnext/nextreg.txt#L882)
+nextregs. This is required for ESP
+[boot mode selection](https://docs.espressif.com/projects/esptool/en/latest/esp8266/advanced-topics/boot-mode-selection.html),
+and for a proposed NextPi GPIO protocol to control the SUPervisor and applications when the UART is otherwise engaged.
 
 ### RTCSys
 A simple date/time plugin which works in tandem with a custom `RTC.SYS` driver to provide date/time on the NextZXOS main menu, and to the `M_GETDATE` and `IDE_RTC API` calls. See its [wiki page](https://github.com/Threetwosevensixseven/CSpectPlugins/wiki/RTCSys) for installation details.
@@ -26,7 +43,7 @@ The sample plugin included with CSpect.
 ## CSpect
 CSpect is a ZXSpectrum emulator by Mike Dailly.
 
-Download the latest version [here](http://www.cspect.org/). These plugins only work with v2.19.0 or newer.
+Download the latest version [here](http://www.cspect.org/). These plugins only work with v2.19.4.4 or newer.
 
 ## Copyright and Licence
 All plugins except i2C_Sample are copyright © 2019-2023 Robin Verhagen-Guest, and are licensed under [Apache 2.0](https://github.com/Threetwosevensixseven/CSpectPlugins/blob/master/LICENSE).

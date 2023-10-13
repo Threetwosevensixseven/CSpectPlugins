@@ -12,13 +12,23 @@ namespace Plugins.UARTReplacement
 {
     public class Settings
     {
-        public string PortName { get; set; }
+        public string EspPortName { get; set; }
+        public string PiPortName { get; set; }
+        public string PiMapGpio4And5ToDtrAndRtsEnable { get; set; }
 
         public Settings()
         {
-            PortName = "COM1";
+            EspPortName = "COM1";
+            PiPortName = "COM2";
+            PiMapGpio4And5ToDtrAndRtsEnable = "False";
         }
 
+        public bool GetPiMapGpio4And5ToDtrAndRtsEnable()
+        {
+            return (PiMapGpio4And5ToDtrAndRtsEnable ?? "").Trim().ToLower() == "true";
+        }
+
+        #region Serialization
         public string ToXML()
         {
             string output = "";
@@ -78,5 +88,7 @@ namespace Plugins.UARTReplacement
             var dll = Assembly.GetAssembly(typeof(Settings)).ManifestModule.ScopeName + ".config";
             return Path.Combine(path, dll);
         }
+
+        #endregion Serialization
     }
 }
