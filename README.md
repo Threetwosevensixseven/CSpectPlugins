@@ -10,9 +10,9 @@ A configurable logger for the Next ESP and Pi UARTs emulated by CSpect. See its 
 ### UARTReplacement
 A buffered UART replacing the internal CSpect emulated [ESP](https://wiki.specnext.dev/ESP8266-01) and [Raspberry Pi Accelerator](https://wiki.specnext.dev/Pi:Main_Page) UARTs. See its [wiki page](https://github.com/Threetwosevensixseven/CSpectPlugins/wiki/UART-Replacement) for installation and configuration details.
 
-The replacement UARTs write binary bytes to the serial port, whereas the internal CSpect UARTs constrain bytes to ASCII characters `0x00..0x3f`. This doesn't matter so much for sending AT commands to the ESP-01, but programming the ESP with [low-level SLIP commands](https://github.com/espressif/esptool/wiki/Serial-Protocol) requires a binary UART. Also the [NextPi] SUPervisor uses non-ASCII control bytes.
+The replacement UARTs write binary bytes to the serial port, whereas the internal CSpect UARTs constrain bytes to ASCII characters `0x00..0x3f`. This doesn't matter so much for sending AT commands to the ESP-01, but programming the ESP with [low-level SLIP commands](https://github.com/espressif/esptool/wiki/Serial-Protocol) requires a binary UART. Also the [NextPi](https://wiki.specnext.dev/Pi:NextPi) SUPervisor uses non-ASCII control bytes.
 
-The UARTs dynamically respond to baud rate changes written to the [Next](https://www.specnext.com/about/)'s UART I/O ports, using prescaler calculations taking into account the current video timing.
+The UARTs dynamically respond to baud rate changes written to the Next's [UART I/O ports](https://gitlab.com/SpectrumNext/ZX_Spectrum_Next_FPGA/-/blob/1a711c9af61876f22ffd9512fa8d8544d3f53b16/cores/zxnext/ports.txt#L364), using prescaler calculations taking into account the [current video timing](https://gitlab.com/SpectrumNext/ZX_Spectrum_Next_FPGA/-/blob/dad52d4a91e43850c55bc1e3c76cebfe45d49164/cores/zxnext/nextreg.txt#L232).
 
 The UARTs also drive the serial [DTR](https://en.wikipedia.org/wiki/Data_Terminal_Ready)
 and
