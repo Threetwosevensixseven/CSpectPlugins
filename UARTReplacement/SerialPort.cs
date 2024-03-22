@@ -32,7 +32,15 @@ namespace Plugins.UARTReplacement
             {
                 target = Target;
                 logPrefix = target.ToString().Substring(0, 1) + "." + (PortName ?? "").Trim() + ".";
+                if (string.IsNullOrWhiteSpace(PortName))
+                {
+                    port = null;
+                    Console.Write(UARTReplacement_Device.PluginName);
+                    Console.WriteLine(Target.ToString() + " UART not configured, disabling.");
+                    return;
+                }
                 port = new System.IO.Ports.SerialPort();
+                int oldBaud = -1;
                 port.PortName = PortName;
                 int baud = Baud;
                 port.BaudRate = baud > 0 ? baud : 115200;
@@ -40,18 +48,32 @@ namespace Plugins.UARTReplacement
                 port.DataBits = 8;
                 port.StopBits = System.IO.Ports.StopBits.One;
                 port.Handshake = System.IO.Ports.Handshake.None;
-                LogClock(false);
-                LogPrescaler("");
+                LogClock(oldBaud, baud, false);
+                LogPrescaler(oldBaud, baud, "");
                 if (dataReceivedHandler != null)
                     port.DataReceived += dataReceivedHandler;
                 port.Open();
             }
+            catch (System.IO.IOException ex)
+            {
+                port = null;
+                if (ex.Message.Contains("does not exist"))
+                {
+                    Console.Write(UARTReplacement_Device.PluginName);
+                    Console.WriteLine("Port " + (PortName ?? "").Trim() 
+                        + " does not exist, disabling " + Target.ToString() + " UART.");
+                }
+                else
+                {
+                    Console.Error.Write(UARTReplacement_Device.PluginName);
+                    Console.Error.WriteLine(ex.ToString());
+                }
+            }
             catch (Exception ex)
             {
                 port = null;
-                Debug.Write("UARTReplacement_Device.SerialPort Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(UARTReplacement_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
         }
 
@@ -71,9 +93,8 @@ namespace Plugins.UARTReplacement
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.SerialPort.Write Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(UARTReplacement_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
         }
 
@@ -95,9 +116,8 @@ namespace Plugins.UARTReplacement
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.SerialPort.ReadByte Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(UARTReplacement_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
             Success = false;
             return 0x00;
@@ -112,6 +132,7 @@ namespace Plugins.UARTReplacement
         /// <returns></returns>
         public int SetPrescalerAndClock(byte BaudByte, byte VideoTimingByte)
         {
+            int oldBaud = Baud;
             try
             {
                 if (port == null)
@@ -156,21 +177,20 @@ namespace Plugins.UARTReplacement
                     // Combine the two sets of bits
                     prescaler = oldBits | newBits;
                     port.BaudRate = Baud;
-                    LogClock(false);
-                    LogPrescaler("16:14");
+                    LogClock(oldBaud, Baud, false);
+                    LogPrescaler(oldBaud, Baud, "16:14");
                 }
                 else
                 {
                     port.BaudRate = Baud;
-                    LogClock();
+                    LogClock(oldBaud, Baud);
                 }
                 return clock;
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.SerialPort.SetPrescalerAndClock Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(UARTReplacement_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
                 return 0;
             }
         }
@@ -183,6 +203,7 @@ namespace Plugins.UARTReplacement
         /// <returns>Returns the newly recalculated baud.</returns>
         public int SetPrescaler(byte BaudByte)
         {
+            int oldBaud = Baud;
             try
             {
                 if (port == null)
@@ -196,7 +217,7 @@ namespace Plugins.UARTReplacement
                     // Combine the two sets of bits
                     prescaler = oldBits | newBits;
                     port.BaudRate = Baud == 1928571 ? 2000000 : Baud;
-                    LogPrescaler("6:0");
+                    LogPrescaler(oldBaud, Baud, "6:0");
                 }
                 else
                 {
@@ -207,16 +228,15 @@ namespace Plugins.UARTReplacement
                     // Combine the two sets of bits
                     prescaler = oldBits | newBits;
                     port.BaudRate = Baud == 1928571 ? 2000000 : Baud;
-                    LogPrescaler("13:7");
+                    LogPrescaler(oldBaud, Baud, "13:7");
                     return Baud;
                 }
                 return Baud;
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.SerialPort.SetPrescaler Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(UARTReplacement_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
                 return 0;
             }
         }
@@ -237,9 +257,8 @@ namespace Plugins.UARTReplacement
                 }
                 catch (Exception ex)
                 {
-                    Debug.Write("UARTReplacement_Device.SerialPort.Baud Exception: ");
-                    Debug.Write(ex.Message);
-                    Debug.Write(ex.StackTrace);
+                    Console.Error.Write(UARTReplacement_Device.PluginName);
+                    Console.Error.WriteLine(ex.ToString());
                     return 0;
                 }
             }
@@ -254,20 +273,19 @@ namespace Plugins.UARTReplacement
                 bool resetESP = (ResetByte & 128) == 128;
                 if (resetESP)
                 {
-                    Debug.WriteLine(logPrefix + "RTS:       " + resetESP + " (drive /RST low)");
+                    Console.WriteLine(UARTReplacement_Device.PluginName + "RTS=" + resetESP + " (drive /RST low)");
                     port.RtsEnable = true;
                 }
                 else
                 {
-                    Debug.WriteLine(logPrefix + "RTS:       " + resetESP + " (release /RST high)");
+                    Console.WriteLine(UARTReplacement_Device.PluginName + "RTS=" + resetESP + " (release /RST high)");
                     port.RtsEnable = false;
                 }
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.SerialPort.EspReset Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(UARTReplacement_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
         }
 
@@ -277,13 +295,12 @@ namespace Plugins.UARTReplacement
             {
                 // bit 0 = ESP GPIO0 output enable
                 enableEspGpio = (EnableByte & 1) == 1;
-                Debug.WriteLine(logPrefix + "EnableEspGpio:" + enableEspGpio);
+                Console.WriteLine(UARTReplacement_Device.PluginName + "EnableEspGpio=" + enableEspGpio);
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.SerialPort.EnableEspGpio Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(UARTReplacement_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
         }
 
@@ -298,20 +315,19 @@ namespace Plugins.UARTReplacement
                 bool gpio0 = !((GpioByte & 1) == 1);
                 if (gpio0)
                 {
-                    Debug.WriteLine(logPrefix + "E.DTR:       " + gpio0 + " (drive /GPIO0 low)");
+                    Console.WriteLine(UARTReplacement_Device.PluginName + "ESP.DTR=" + gpio0 + " (drive /GPIO0 low)");
                     port.DtrEnable = true;
                 }
                 else
                 {
-                    Debug.WriteLine(logPrefix + "E.DTR:       " + gpio0 + " (release /GPIO0 high)");
+                    Console.WriteLine(UARTReplacement_Device.PluginName + "ESP.DTR=" + gpio0 + " (release /GPIO0 high)");
                     port.DtrEnable = false;
                 }
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.SerialPort.SetEspGpio Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(UARTReplacement_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
         }
 
@@ -323,18 +339,17 @@ namespace Plugins.UARTReplacement
                 bool old = enablePiGpio4Output;
                 enablePiGpio4Output = (EnableByte & 16) == 16;
                 if (enablePiGpio4Output != old)
-                    Debug.WriteLine(logPrefix + "EnablePiGpio4Output:" + enablePiGpio4Output);
+                    Console.WriteLine(UARTReplacement_Device.PluginName + "EnablePiGpio4Output=" + enablePiGpio4Output);
                 // bit 5 = Pi GPIO5 output enable
                 old = enablePiGpio5Output;
                 enablePiGpio5Output = (EnableByte & 32) == 32;
                 if (enablePiGpio5Output != old)
-                    Debug.WriteLine(logPrefix + "EnablePiGpio5Output:" + enablePiGpio5Output);
+                    Console.WriteLine(UARTReplacement_Device.PluginName + "EnablePiGpio5Output=" + enablePiGpio5Output);
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.SerialPort.EnablePiGpio Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(UARTReplacement_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
         }
 
@@ -350,12 +365,12 @@ namespace Plugins.UARTReplacement
                     bool gpio4 = ((GpioByte & 16) == 16);
                     if (gpio4 && port.DtrEnable != gpio4)
                     {
-                        Debug.WriteLine(logPrefix + "DTR:       " + gpio4 + " (drive /GPIO4 low)");
+                        Console.WriteLine(UARTReplacement_Device.PluginName + "Pi.DTR=" + gpio4 + " (drive /GPIO4 low)");
                         port.DtrEnable = true;
                     }
                     else if (!gpio4 && port.DtrEnable != gpio4)
                     {
-                        Debug.WriteLine(logPrefix + "DTR:       " + gpio4 + " (release /GPIO4 high)");
+                        Console.WriteLine(UARTReplacement_Device.PluginName + "Pi.DTR=" + gpio4 + " (release /GPIO4 high)");
                         port.DtrEnable = false;
                     }
                 }
@@ -365,24 +380,30 @@ namespace Plugins.UARTReplacement
                     bool gpio5 = ((GpioByte & 32) == 32);
                     if (gpio5 && port.RtsEnable != gpio5)
                     {
-                        Debug.WriteLine(logPrefix + "RTS:       " + gpio5 + " (drive /GPIO5 low)");
+                        Console.WriteLine(UARTReplacement_Device.PluginName + "Pi.RTS=" + gpio5 + " (drive /GPIO5 low)");
                         port.RtsEnable = true;
                     }
                     else if (!gpio5 && port.RtsEnable != gpio5)
                     {
-                        Debug.WriteLine(logPrefix + "RTS:       " + gpio5 + " (release /GPIO5 high)");
+                        Console.WriteLine(UARTReplacement_Device.PluginName + "Pi.RTS=" + gpio5 + " (release /GPIO5 high)");
                         port.RtsEnable = false;
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.SerialPort.SetPiGpio Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(UARTReplacement_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
         }
 
+        public bool IsEnabled
+        {
+            get
+            {
+                return port != null;
+            }
+        }
 
         /// <summary>
         /// Convenience method to log the clock and calculated baud to the debug console, every time the video timing clock changes.
@@ -391,21 +412,20 @@ namespace Plugins.UARTReplacement
         /// Optionally choose not to log the calculated baud, if you know the prescaler is about to be changed
         /// and logged straight afterwareds.
         /// </param>
-        private void LogClock(bool LogBaud = true)
+        private void LogClock(int oldBaud, int newBaud, bool LogBaud = true)
         {
             try
             {
                 if (port == null)
                     return;
-                Debug.WriteLine(logPrefix + "Clock:     " + clock);
-                if (LogBaud)
-                    Debug.WriteLine(logPrefix + "Baud:      " + Baud);
+                //Console.WriteLine(UARTReplacement_Device.PluginName + "Clock=" + clock);
+                if (LogBaud && newBaud != oldBaud)
+                    Console.WriteLine(UARTReplacement_Device.PluginName + "Setting " + target.ToString() + " baud to " + Baud);
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.SerialPort.LogClock Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(UARTReplacement_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
         }
 
@@ -413,22 +433,22 @@ namespace Plugins.UARTReplacement
         /// Convenience method to log the prescaler and calculated baud to the debug console, every time the prescaler changes.
         /// </summary>
         /// <param name="BitsChanged"></param>
-        private void LogPrescaler(string BitsChanged)
+        private void LogPrescaler(int oldBaud, int newBaud, string BitsChanged)
         {
             try
             {
                 if (port == null)
                     return;
                 string bstr = Convert.ToString(prescaler, 2).PadLeft(17, '0');
-                Debug.WriteLine(logPrefix + "Prescaler: " + bstr.Substring(0, 3) + " " + bstr.Substring(3, 7) + " " + bstr.Substring(10, 7)
-                    + " (" + prescaler + (string.IsNullOrWhiteSpace(BitsChanged) ? "" : ", changed bits " + BitsChanged) + ")");
-                Debug.WriteLine(logPrefix + "Baud:      " + Baud);
+                //Console.WriteLine(UARTReplacement_Device.PluginName + "Prescaler=" + bstr.Substring(0, 3) + " " + bstr.Substring(3, 7) + " " + bstr.Substring(10, 7)
+                //    + " (" + prescaler + (string.IsNullOrWhiteSpace(BitsChanged) ? "" : ", changed bits " + BitsChanged) + ")");
+                if (newBaud != oldBaud)
+                    Console.WriteLine(UARTReplacement_Device.PluginName + "Setting " + target.ToString() + " baud to " + Baud);
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.LogPrescaler Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(UARTReplacement_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
         }
 

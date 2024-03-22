@@ -31,6 +31,8 @@ nextregs. This is required for ESP
 [boot mode selection](https://docs.espressif.com/projects/esptool/en/latest/esp8266/advanced-topics/boot-mode-selection.html),
 and for a proposed NextPi GPIO protocol to control the SUPervisor and applications when the UART is otherwise engaged.
 
+**If you're using this plugin, _do not_ start CSpect with the `-com` or `-com2` arguments.**
+
 ### RTCSys
 A simple date/time plugin which works in tandem with a custom `RTC.SYS` driver to provide date/time on the NextZXOS main menu, and to the `M_GETDATE` and `IDE_RTC API` calls. See its [wiki page](https://github.com/Threetwosevensixseven/CSpectPlugins/wiki/RTCSys) for installation details.
 
@@ -46,7 +48,7 @@ CSpect is a ZXSpectrum emulator by Mike Dailly.
 Download the latest version [here](http://www.cspect.org/). These plugins only work with v2.19.4.4 or newer.
 
 ## Copyright and Licence
-All plugins except i2C_Sample are copyright © 2019-2023 Robin Verhagen-Guest, and are licensed under [Apache 2.0](https://github.com/Threetwosevensixseven/CSpectPlugins/blob/master/LICENSE).
+All plugins except i2C_Sample are copyright © 2019-2024 Robin Verhagen-Guest, and are licensed under [Apache 2.0](https://github.com/Threetwosevensixseven/CSpectPlugins/blob/master/LICENSE).
 
 CSpect and the i2C_Sample example project are copyright © 1998-2023 Mike Dailly All rights reserved.
 

@@ -58,7 +58,7 @@ namespace Plugins.UARTLogger
                     reader.Close();
                 }
             }
-            catch (Exception /*ex*/)
+            catch (Exception)
             {
                 settings = new Settings();
             }
@@ -75,7 +75,7 @@ namespace Plugins.UARTLogger
                 File.WriteAllText(fn, ToXML());
                 return true;
             }
-            catch (Exception /*ex*/)
+            catch (Exception)
             {
                 return false;
             }

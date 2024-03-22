@@ -14,21 +14,45 @@ namespace Plugins.UARTLogger
 
         public FileLogger(Settings Settings, UARTTargets Target)
         {
-            if (Target == UARTTargets.ESP && (Settings == null || !Settings.EnableESPLogging))
-                return;
-            if (Target == UARTTargets.Pi && (Settings == null || !Settings.EnablePiLogging))
-                return;
-            string fn = Target == UARTTargets.ESP ? Settings.ESPLogFile : Settings.PiLogFile;
-            var mode = Settings.TruncateLogsOnStartup ? FileMode.Create : FileMode.Append;
-            fileStream = File.Open(fn, mode, FileAccess.Write, FileShare.ReadWrite);
-            fileWriter = new StreamWriter(fileStream);
-            fileWriter.AutoFlush = true;
+            try
+            {
+                if (Target == UARTTargets.ESP && (Settings == null || !Settings.EnableESPLogging))
+                {
+                    Console.WriteLine(UARTLogger_Device.PluginName + "Disabling " + Target.ToString() + " logging.");
+                    return;
+                }
+                if (Target == UARTTargets.Pi && (Settings == null || !Settings.EnablePiLogging))
+                {
+                    Console.WriteLine(UARTLogger_Device.PluginName + "Disabling " + Target.ToString() + " logging.");
+                    return;
+                }
+                string fn = Target == UARTTargets.ESP ? Settings.ESPLogFile : Settings.PiLogFile;
+                var mode = Settings.TruncateLogsOnStartup ? FileMode.Create : FileMode.Append;
+                fileStream = File.Open(fn, mode, FileAccess.Write, FileShare.ReadWrite);
+                fileWriter = new StreamWriter(fileStream);
+                fileWriter.AutoFlush = true;
+                Console.WriteLine(UARTLogger_Device.PluginName + "Logging " + Target.ToString() + " traffic to " + fn + ".");
+
+            }
+            catch (Exception ex)
+            {
+                Console.Error.Write(UARTLogger_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
+            }
         }
 
         public void Write(String Value)
         {
-            if (fileWriter != null && Value != null)
-                fileWriter.Write(Value);
+            try
+            {
+                if (fileWriter != null && Value != null)
+                    fileWriter.Write(Value);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.Write(UARTLogger_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
+            }
         }
 
         #region IDisposable Support
@@ -36,27 +60,35 @@ namespace Plugins.UARTLogger
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            try
             {
-                if (disposing)
+                if (!disposedValue)
                 {
-                    // Dispose managed state (managed objects).
-                    if (fileWriter != null)
+                    if (disposing)
                     {
-                        fileWriter.Dispose();
-                        fileWriter = null;
+                        // Dispose managed state (managed objects).
+                        if (fileWriter != null)
+                        {
+                            fileWriter.Dispose();
+                            fileWriter = null;
+                        }
+                        if (fileStream != null)
+                        {
+                            fileStream.Dispose();
+                            fileStream = null;
+                        }
                     }
-                    if (fileStream != null)
-                    {
-                        fileStream.Dispose();
-                        fileStream = null;
-                    }
+
+                    // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                    // TODO: set large fields to null.
+
+                    disposedValue = true;
                 }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
-                disposedValue = true;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.Write(UARTLogger_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
         }
 
@@ -69,10 +101,18 @@ namespace Plugins.UARTLogger
         // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
+            try
+            {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
+                // TODO: uncomment the following line if the finalizer is overridden above.
+                // GC.SuppressFinalize(this);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.Write(UARTLogger_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
+            }
         }
         #endregion
     }

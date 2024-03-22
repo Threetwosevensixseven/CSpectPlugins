@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Reflection;
 using Plugin;
 
 namespace Plugins.UARTReplacement
@@ -33,11 +30,20 @@ namespace Plugins.UARTReplacement
         private object espSync;
         private object piSync;
 
+        public static string PluginName = "";
+
         public List<sIO> Init(iCSpect _CSpect)
         {
             List<sIO> ports = new List<sIO>();
             try
             {
+                var assy = Assembly.GetExecutingAssembly();
+                PluginName = assy.GetName().Name + " Plugin: ";
+                Console.Write(PluginName + "v");
+                Console.Write(assy.GetName().Version.ToString() + ".");
+                Console.Write(assy.GetAssemblyConfiguration().ToLower());
+                Console.WriteLine(" started.");
+
                 // Initialise and load plugin settings
                 espSync = new object();
                 piSync = new object();
@@ -60,22 +66,20 @@ namespace Plugins.UARTReplacement
                 ports.Add(new sIO(REG_RESET, eAccess.NextReg_Write));
                 ports.Add(new sIO(REG_ESP_GPIO_ENABLE, eAccess.NextReg_Write));
                 ports.Add(new sIO(REG_ESP_GPIO, eAccess.NextReg_Write));
-                if (settings.GetPiMapGpio4And5ToDtrAndRtsEnable())
+                if (settings.GetPiMapGpio4And5ToDtrAndRtsEnable() && (piPort?.IsEnabled ?? false))
                 {
-                    Debug.WriteLine("Mapping Pi GPIO control pin 4 to DTR on " + (settings.PiPortName ?? "").Trim());
-                    Debug.WriteLine("Mapping Pi GPIO control pin 5 to RTS on " + (settings.PiPortName ?? "").Trim());
+                    Console.WriteLine(UARTReplacement_Device.PluginName + "Mapping Pi GPIO control pin 4 to DTR on " + (settings.PiPortName ?? "").Trim());
+                    Console.WriteLine(UARTReplacement_Device.PluginName + "Mapping Pi GPIO control pin 5 to RTS on " + (settings.PiPortName ?? "").Trim());
                     // We are not subscribing to reads of these nextregs.
                     // If there is any Next software that needs to read them, add that functionalilty to the Plugin.
                     ports.Add(new sIO(PI_GPIO_EN_1, eAccess.NextReg_Write));
                     ports.Add(new sIO(PI_GPIO_RW_1, eAccess.NextReg_Write));
                 }
-                Debug.WriteLine("UARTReplacement_Device.Init complete");
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.Init Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
             return ports;
         }
@@ -97,9 +101,12 @@ namespace Plugins.UARTReplacement
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.Quit Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(PluginName);
+                Console.Error.WriteLine(ex.ToString());
+            }
+            finally
+            {
+                Console.WriteLine(PluginName + "Terminated.");
             }
         }
 
@@ -118,7 +125,7 @@ namespace Plugins.UARTReplacement
                         var target = (_value & 64) == 0 ? UARTTargets.ESP : UARTTargets.Pi;
                         Target = target;
                         if (oldTarget != Target)
-                            Debug.WriteLine("UARTReplacement_Device.Target changed to " + Target.ToString());
+                            Console.WriteLine(UARTReplacement_Device.PluginName + "Target changed to " + Target.ToString());
                         currentPort.SetPrescalerAndClock(_value, CSpect.GetNextRegister(REG_VIDEO_TIMING));
                         // We are transparently logging without handling the write, so return false
                         return true;
@@ -163,9 +170,8 @@ namespace Plugins.UARTReplacement
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.Write Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
             // Don't handle any writes we didn't register for
             return false;
@@ -219,9 +225,8 @@ namespace Plugins.UARTReplacement
             }
             catch (Exception ex)
             {
-                Debug.Write("UARTReplacement_Device.Read Exception: ");
-                Debug.Write(ex.Message);
-                Debug.Write(ex.StackTrace);
+                Console.Error.Write(PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
 
             // Don't handle any reads we didn't register for

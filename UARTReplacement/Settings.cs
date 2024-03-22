@@ -61,7 +61,7 @@ namespace Plugins.UARTReplacement
                     reader.Close();
                 }
             }
-            catch (Exception /*ex*/)
+            catch (Exception)
             {
                 settings = new Settings();
             }
@@ -76,7 +76,7 @@ namespace Plugins.UARTReplacement
                 File.WriteAllText(fn, ToXML());
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }

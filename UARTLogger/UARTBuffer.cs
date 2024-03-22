@@ -21,113 +21,153 @@ namespace Plugins.UARTLogger
 
         public UARTBuffer(Settings Settings)
         {
-            settings = Settings;
-            buffer = new Queue<byte>();
-            state = UARTStates.Reading;
-            target = UARTTargets.ESP;
-            sync = new object();
-            timer = new Timer(timerElapsed, this, settings.FlushLogsAfterSecs * 1000, Timeout.Infinite);
-            espLogger = new FileLogger(Settings, UARTTargets.ESP);
-            piLogger = new FileLogger(Settings, UARTTargets.Pi);
+            try
+            {
+                settings = Settings;
+                buffer = new Queue<byte>();
+                state = UARTStates.Reading;
+                target = UARTTargets.ESP;
+                sync = new object();
+                timer = new Timer(timerElapsed, this, settings.FlushLogsAfterSecs * 1000, Timeout.Infinite);
+                espLogger = new FileLogger(Settings, UARTTargets.ESP);
+                piLogger = new FileLogger(Settings, UARTTargets.Pi);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.Write(UARTLogger_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
+            }
         }
 
         public void Log(byte Value, UARTStates NewState)
         {
-            timer.Change(settings.FlushLogsAfterSecs * 1000, Timeout.Infinite);
-            if (state != NewState)
+            try
             {
-                Flush();
-                state = NewState;
+                timer.Change(settings.FlushLogsAfterSecs * 1000, Timeout.Infinite);
+                if (state != NewState)
+                {
+                    Flush();
+                    state = NewState;
+                }
+                buffer.Enqueue(Value);
             }
-            buffer.Enqueue(Value);
+            catch (Exception ex)
+            {
+                Console.Error.Write(UARTLogger_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
+            }
         }
 
         public void ChangeUARTType(UARTTargets NewTarget)
         {
-            timer.Change(settings.FlushLogsAfterSecs * 1000, Timeout.Infinite);
-            if (NewTarget != target)
+            try
             {
-                Flush();
-                target = NewTarget;
+                timer.Change(settings.FlushLogsAfterSecs * 1000, Timeout.Infinite);
+                if (NewTarget != target)
+                {
+                    Flush();
+                    target = NewTarget;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.Write(UARTLogger_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
         }
 
         private void Flush()
         {
-            lock (sync)
+            try
             {
-                if (!settings.EnableESPLogging && target == UARTTargets.ESP)
+                lock (sync)
                 {
-                    buffer = new Queue<byte>();
-                    return;
-                }
-                else if (!settings.EnablePiLogging && target == UARTTargets.Pi)
-                {
-                    buffer = new Queue<byte>();
-                    return;
-                }
-
-                if (buffer.Count > 0)
-                {
-                    // Write header
-                    string action = state == UARTStates.Reading ? "Read " : "Written ";
-                    string prep = state == UARTStates.Reading ? "from " : "to ";
-                    string plural = buffer.Count == 1 ? "" : "s";
-                    var now = DateTime.Now;
-                    var sb = new StringBuilder();
-                    sb.AppendLine();
-                    sb.Append("[");
-                    sb.Append(now.ToShortDateString());
-                    sb.Append(" ");
-                    sb.Append(now.ToLongTimeString());
-                    sb.Append("] ");
-                    sb.Append(action);
-                    sb.Append(buffer.Count);
-                    sb.Append(" byte");
-                    sb.Append(plural);
-                    sb.Append(" ");
-                    sb.Append(prep);
-                    sb.Append(target.ToString());
-                    sb.AppendLine(":");
-
-                    // Write data rows
-                    int rowCount = 0;
-                    string hex = "";
-                    string asc = "";
-                    while (buffer.Count > 0)
+                    if (!settings.EnableESPLogging && target == UARTTargets.ESP)
                     {
-                        if (rowCount == 0)
-                        {
-                            hex = "    ";
-                            asc = "";
-                        }
-                        byte b = buffer.Dequeue();
-                        hex += b.ToString("x2") + " ";
-                        asc += SpectrumCharset.ToASCII(b);
-                        rowCount++;
-                        if (rowCount >= 16 || buffer.Count == 0)
-                        {
-                            sb.Append(hex.PadRight(54));
-                            sb.Append(asc);
-                            sb.AppendLine();
-                            rowCount = 0;
-                        }
+                        buffer = new Queue<byte>();
+                        return;
+                    }
+                    else if (!settings.EnablePiLogging && target == UARTTargets.Pi)
+                    {
+                        buffer = new Queue<byte>();
+                        return;
                     }
 
-                    // Log result
-                    var text = sb.ToString();
-                    if (target == UARTTargets.ESP)
-                        espLogger.Write(text);
-                    else if (target == UARTTargets.Pi)
-                        piLogger.Write(text);
+                    if (buffer.Count > 0)
+                    {
+                        // Write header
+                        string action = state == UARTStates.Reading ? "Read " : "Written ";
+                        string prep = state == UARTStates.Reading ? "from " : "to ";
+                        string plural = buffer.Count == 1 ? "" : "s";
+                        var now = DateTime.Now;
+                        var sb = new StringBuilder();
+                        sb.AppendLine();
+                        sb.Append("[");
+                        sb.Append(now.ToShortDateString());
+                        sb.Append(" ");
+                        sb.Append(now.ToLongTimeString());
+                        sb.Append("] ");
+                        sb.Append(action);
+                        sb.Append(buffer.Count);
+                        sb.Append(" byte");
+                        sb.Append(plural);
+                        sb.Append(" ");
+                        sb.Append(prep);
+                        sb.Append(target.ToString());
+                        sb.AppendLine(":");
+
+                        // Write data rows
+                        int rowCount = 0;
+                        string hex = "";
+                        string asc = "";
+                        while (buffer.Count > 0)
+                        {
+                            if (rowCount == 0)
+                            {
+                                hex = "    ";
+                                asc = "";
+                            }
+                            byte b = buffer.Dequeue();
+                            hex += b.ToString("x2") + " ";
+                            asc += SpectrumCharset.ToASCII(b);
+                            rowCount++;
+                            if (rowCount >= 16 || buffer.Count == 0)
+                            {
+                                sb.Append(hex.PadRight(54));
+                                sb.Append(asc);
+                                sb.AppendLine();
+                                rowCount = 0;
+                            }
+                        }
+
+                        // Log result
+                        var text = sb.ToString();
+                        if (target == UARTTargets.ESP)
+                            espLogger.Write(text);
+                        else if (target == UARTTargets.Pi)
+                            piLogger.Write(text);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.Write(UARTLogger_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
         }
 
         private void timerElapsed(object Buffer)
         {
-            if (Buffer is UARTBuffer)
-                ((UARTBuffer)Buffer).Flush();
+            try
+            {
+                if (Buffer is UARTBuffer)
+                    ((UARTBuffer)Buffer).Flush();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.Write(UARTLogger_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
+            }
         }
 
         #region IDisposable
@@ -136,28 +176,36 @@ namespace Plugins.UARTLogger
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            try
             {
-                if (disposing)
+                if (!disposedValue)
                 {
-                    // Dispose managed state (managed objects).
-                    Flush();
-                    if (espLogger != null)
+                    if (disposing)
                     {
-                        espLogger.Dispose();
-                        espLogger = null;
+                        // Dispose managed state (managed objects).
+                        Flush();
+                        if (espLogger != null)
+                        {
+                            espLogger.Dispose();
+                            espLogger = null;
+                        }
+                        if (piLogger != null)
+                        {
+                            piLogger.Dispose();
+                            piLogger = null;
+                        }
                     }
-                    if (piLogger != null)
-                    {
-                        piLogger.Dispose();
-                        piLogger = null;
-                    }
+
+                    // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                    // TODO: set large fields to null.
+
+                    disposedValue = true;
                 }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
-                disposedValue = true;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.Write(UARTLogger_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
             }
         }
 
@@ -170,10 +218,18 @@ namespace Plugins.UARTLogger
         // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
+            try
+            {
+                // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+                Dispose(true);
+                // TODO: uncomment the following line if the finalizer is overridden above.
+                // GC.SuppressFinalize(this);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.Write(UARTLogger_Device.PluginName);
+                Console.Error.WriteLine(ex.ToString());
+            }
         }
         #endregion IDisposable
     }
