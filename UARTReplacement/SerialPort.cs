@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Plugins.UARTReplacement
@@ -21,6 +22,8 @@ namespace Plugins.UARTReplacement
         private bool enablePiGpio5Output = false;
         private UARTTargets target;
         private string logPrefix;
+        private System.IO.Ports.SerialDataReceivedEventHandler handler;
+        private Thread readThread;
 
         /// <summary>
         /// Creates an instance of the SerialPort class.
@@ -31,6 +34,7 @@ namespace Plugins.UARTReplacement
             try
             {
                 target = Target;
+                handler = dataReceivedHandler;
                 logPrefix = target.ToString().Substring(0, 1) + "." + (PortName ?? "").Trim() + ".";
                 if (string.IsNullOrWhiteSpace(PortName))
                 {
@@ -51,8 +55,19 @@ namespace Plugins.UARTReplacement
                 LogClock(oldBaud, baud, false);
                 LogPrescaler(oldBaud, baud, "");
                 if (dataReceivedHandler != null)
-                    port.DataReceived += dataReceivedHandler;
-                port.Open();
+                {
+                    if  (IsRunningOnMono())
+                    {
+                        port.Open();
+                        readThread = new Thread(new ThreadStart(this.ReadThread));
+                        readThread.Start();
+                    }
+                    else
+                    {
+                        port.DataReceived += dataReceivedHandler;
+                        port.Open();
+                    }
+                }
             }
             catch (System.IO.IOException ex)
             {
@@ -95,6 +110,21 @@ namespace Plugins.UARTReplacement
             {
                 Console.Error.Write(UARTReplacement_Device.PluginName);
                 Console.Error.WriteLine(ex.ToString());
+            }
+        }
+
+        public void ReadThread()
+        {
+            try
+            {
+                while(true)
+                {
+                    Thread.Sleep(10);
+                    handler.Invoke(port, null);
+                }
+            }
+            catch(ThreadInterruptedException) {
+                // normal at dispose
             }
         }
 
@@ -404,6 +434,11 @@ namespace Plugins.UARTReplacement
                 return port != null;
             }
         }
+        
+        public static bool IsRunningOnMono ()
+        {
+            return Type.GetType ("Mono.Runtime") != null;
+        }
 
         /// <summary>
         /// Convenience method to log the clock and calculated baud to the debug console, every time the video timing clock changes.
@@ -462,6 +497,8 @@ namespace Plugins.UARTReplacement
                 if (disposing)
                 {
                     // Dispose managed state (managed objects).
+                    readThread?.Interrupt();
+
                     if (port != null)
                     {
                         if (port.IsOpen)
