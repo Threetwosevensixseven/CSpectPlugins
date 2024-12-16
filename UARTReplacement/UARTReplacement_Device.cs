@@ -223,10 +223,16 @@ namespace Plugins.UARTReplacement
                         // Reads from this port return a status flag in bit 0 indicating whether 
                         // there is any data available to read from the UART buffer.
                         _isvalid = true;
+                        // bit 4 = 1 if the Tx buffer is empty. Hardcode this to 1 for now, as the PC OS has a very large TX buffer.
+                        //   It will work better for program that wait for this flag to be 1 before continuing.
+                        // bit 0 = 1 if the Rx buffer contains bytes. This is reporting our internal RX buffer, which is drained as
+                        //   fast as possble from the serial buffer, and kept in currentBuffer for port 0x143b reads to return it.
+                        //   In future, consider also including the serial port .BytesToRead count.
+                        // Other flags can also be implemented in future.
                         if (currentBuffer.Count > 0)
-                            return 1;
+                            return 0b_0001_0001;
                         else
-                            return 0;
+                            return 0b_0001_0000;
                 }
             }
             catch (Exception ex)
