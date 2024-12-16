@@ -21,6 +21,7 @@ namespace Plugins.UARTReplacement
         private bool enablePiGpio5Output = false;
         private UARTTargets target;
         private string logPrefix;
+        private byte prescalerTop3Bits = 0x00;
 
         /// <summary>
         /// Creates an instance of the SerialPort class.
@@ -135,6 +136,12 @@ namespace Plugins.UARTReplacement
             int oldBaud = Baud;
             try
             {
+                if ((BaudByte & 0x10) == 0x10)
+                {
+                    // Get bits 14..16 of the new prescaler
+                    prescalerTop3Bits = (byte)(BaudByte & 0b111);
+                    //Console.WriteLine(UARTReplacement_Device.PluginName + "Prescaler 17..14: " + ToBin3(prescalerTop3Bits));
+                }
                 if (port == null)
                     return 0;
                 int mode = VideoTimingByte & 7;
@@ -170,8 +177,7 @@ namespace Plugins.UARTReplacement
                 }
                 if ((BaudByte & 0x10) == 0x10)
                 {
-                    // Get bits 14..16 of the new prescaler
-                    int newBits = (BaudByte & 0x07) << 14;
+                    int newBits = prescalerTop3Bits << 14;
                     // Mask out everything of the existing prescaler except bits 14..16
                     int oldBits = prescaler & 0x3fff;
                     // Combine the two sets of bits
@@ -194,6 +200,13 @@ namespace Plugins.UARTReplacement
                 return 0;
             }
         }
+
+        private string ToBin3(byte value)
+        {
+            string val = Convert.ToString(value, 2).PadLeft(8, '0').ToLower();
+            return "0b" + val.Substring(5);
+        }
+
 
         /// <summary>
         /// Given a raw byte written to PORT_UART_RX, parses the high bit to decide whether it represents a change
@@ -262,6 +275,17 @@ namespace Plugins.UARTReplacement
                     return 0;
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns the value for a PORT_UART_CONTROL (0x153b) read.
+        /// Bit 6 is 0 for ESP and 1 for Pi. Bits 2..0 are the top three bits of the prescaler.
+        /// All other bits are 0.
+        /// </summary>
+        /// <returns>The byte value to be returned by a PORT_UART_CONTROL (0x153b) read.</returns>
+        public byte GetUartControlValue()
+        {
+            return (byte)((int)target | prescalerTop3Bits);
         }
 
         public void EspReset(byte ResetByte)

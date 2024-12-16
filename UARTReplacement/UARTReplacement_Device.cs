@@ -63,6 +63,7 @@ namespace Plugins.UARTReplacement
                 ports.Add(new sIO(PORT_UART_RX, eAccess.Port_Write));
                 ports.Add(new sIO(PORT_UART_RX, eAccess.Port_Read));
                 ports.Add(new sIO(PORT_UART_CONTROL, eAccess.Port_Write));
+                ports.Add(new sIO(PORT_UART_CONTROL, eAccess.Port_Read));
                 ports.Add(new sIO(REG_RESET, eAccess.NextReg_Write));
                 ports.Add(new sIO(REG_ESP_GPIO_ENABLE, eAccess.NextReg_Write));
                 ports.Add(new sIO(REG_ESP_GPIO, eAccess.NextReg_Write));
@@ -123,6 +124,7 @@ namespace Plugins.UARTReplacement
                         // But just in case it can vary, let's do it. It doesn't seem to cause performance issues to do so.
                         var oldTarget = Target;
                         var target = (_value & 64) == 0 ? UARTTargets.ESP : UARTTargets.Pi;
+                        //Console.WriteLine(UARTReplacement_Device.PluginName + "OUT 0x153b, " + ToBin(_value));
                         Target = target;
                         if (oldTarget != Target)
                             Console.WriteLine(UARTReplacement_Device.PluginName + "Target changed to " + Target.ToString());
@@ -136,6 +138,7 @@ namespace Plugins.UARTReplacement
                         return true;
                     case PORT_UART_RX:
                         // Writes to this port represent changes to the prescaler which cause the UART baud to change
+                        //Console.WriteLine(UARTReplacement_Device.PluginName + "OUT 0x143b, " + ToBin(_value));
                         currentPort.SetPrescaler(_value);
                         return true;
                     case REG_RESET:
@@ -183,6 +186,9 @@ namespace Plugins.UARTReplacement
             {
                 switch (_port)
                 {
+                    case PORT_UART_CONTROL:
+                        _isvalid = true;
+                        return currentPort.GetUartControlValue();
                     case PORT_UART_RX:
                         if (UART_RX_Internal)
                         {
@@ -307,6 +313,12 @@ namespace Plugins.UARTReplacement
             {
                 return Target == UARTTargets.ESP ? espSync : piSync;
             }
+        }
+
+        private string ToBin(byte value)
+        {
+            string val = Convert.ToString(value, 2).PadLeft(8, '0').ToLower();
+            return "0b" + val.Substring(0, 4) + "'" + val.Substring(4);
         }
     }
 }
