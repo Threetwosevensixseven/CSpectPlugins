@@ -4,7 +4,7 @@
 
 using System.Reflection;
 
-[assembly: AssemblyConfiguration("667b009")]
+[assembly: AssemblyConfiguration("658aa0e")]
 [assembly: AssemblyCopyright("Copyright © 2019-2025 Robin Verhagen-Guest")]
 [assembly: AssemblyVersion("1.7.0.0")]
 [assembly: AssemblyFileVersion("1.7.0.0")]

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Plugins.UARTReplacement
@@ -22,6 +23,8 @@ namespace Plugins.UARTReplacement
         private UARTTargets target;
         private string logPrefix;
         private byte prescalerTop3Bits = 0x00;
+        private System.IO.Ports.SerialDataReceivedEventHandler handler;
+        private Thread readThread;
 
         /// <summary>
         /// Creates an instance of the SerialPort class.
@@ -32,6 +35,7 @@ namespace Plugins.UARTReplacement
             try
             {
                 target = Target;
+                handler = dataReceivedHandler;
                 logPrefix = target.ToString().Substring(0, 1) + "." + (PortName ?? "").Trim() + ".";
                 if (string.IsNullOrWhiteSpace(PortName))
                 {
@@ -52,8 +56,21 @@ namespace Plugins.UARTReplacement
                 LogClock(oldBaud, baud, false);
                 LogPrescaler(oldBaud, baud, "");
                 if (dataReceivedHandler != null)
-                    port.DataReceived += dataReceivedHandler;
-                port.Open();
+                {
+                    if (IsRunningOnMono())
+                    {
+                        Console.Write(UARTReplacement_Device.PluginName);
+                        Console.WriteLine($"Running on Mono, using RX polling thread for {Target.ToString()}.");
+                        port.Open();
+                        readThread = new Thread(new ThreadStart(this.ReadThread));
+                        readThread.Start();
+                    }
+                    else
+                    {
+                        port.DataReceived += dataReceivedHandler;
+                        port.Open();
+                    }
+                }
             }
             catch (System.IO.IOException ex)
             {
@@ -201,13 +218,6 @@ namespace Plugins.UARTReplacement
             }
         }
 
-        private string ToBin3(byte value)
-        {
-            string val = Convert.ToString(value, 2).PadLeft(8, '0').ToLower();
-            return "0b" + val.Substring(5);
-        }
-
-
         /// <summary>
         /// Given a raw byte written to PORT_UART_RX, parses the high bit to decide whether it represents a change
         /// to bits 6:0 or 13:7, and updates the prescaler accordingly.
@@ -288,6 +298,12 @@ namespace Plugins.UARTReplacement
             return (byte)((int)target | prescalerTop3Bits);
         }
 
+        /// <summary>
+        /// Handle nextreg 2 for Espressif ESP reset USB conventions.
+        /// When nextreg 2, 128 is invoked, set serial RTS to drive ESP /RST low.
+        /// When nextreg 2, 0 is invoked, clear serial RETS to release ESP /RST high.
+        /// </summary>
+        /// <param name="ResetByte">A nextreg 2 control byte value.</param>
         public void EspReset(byte ResetByte)
         {
             try
@@ -313,6 +329,12 @@ namespace Plugins.UARTReplacement
             }
         }
 
+        /// <summary>
+        /// Handle nextreg 0xa8.
+        /// When nextreg 0xa8, 1 is invoked, enable ESP GPIO0.
+        /// When nextreg 0xa8, 0 is invoked, disable ESP GPIO0.
+        /// </summary>
+        /// <param name="EnableByte">A nextreg 0xa8 control byte value.</param>
         public void EnableEspGpio(byte EnableByte)
         {
             try
@@ -328,6 +350,12 @@ namespace Plugins.UARTReplacement
             }
         }
 
+        /// <summary>
+        /// Handle nextreg 0xa9.
+        /// When nextreg 0xa9, 1 is invoked, set DTR to drive ESP /GPIO0 low.
+        /// When nextreg 0xa9, 0 is invoked, clear DTR to release ESP /GPIO0 high.
+        /// </summary>
+        /// <param name="GpioByte">A nextreg 0xa9 control byte value.</param>
         public void SetEspGpio(byte GpioByte)
         {
             try
@@ -355,6 +383,14 @@ namespace Plugins.UARTReplacement
             }
         }
 
+        /// <summary>
+        /// Handle nextreg 0x90.
+        /// When nextreg 0x90, 16 is invoked, enable Pi GPIO4.
+        /// When nextreg 0x90, 0 is invoked, disable Pi GPIO4.
+        /// When nextreg 0x90, 32 is invoked, enable Pi GPIO5.
+        /// When nextreg 0x90, 0 is invoked, disable Pi GPIO5.
+        /// </summary>
+        /// <param name="EnableByte">A nextreg 0x90 control byte value.</param>
         public void EnablePiGpio(byte EnableByte)
         {
             try
@@ -377,6 +413,14 @@ namespace Plugins.UARTReplacement
             }
         }
 
+        /// <summary>
+        /// Handle nextreg 0x98.
+        /// When nextreg 0x98, 16 is invoked, set DTR to drive Pi /GPIO4 low.
+        /// When nextreg 0x98, 0 is invoked, clear DTR to release Pi /GPIO4 high.
+        /// When nextreg 0x98, 32 is invoked, set RTS to drive Pi /GPIO5 low.
+        /// When nextreg 0x98, 0 is invoked, clear RTS to release Pi /GPIO5 high.
+        /// </summary>
+        /// <param name="GpioByte">A nextreg 0x98 control byte value.</param>
         public void SetPiGpio(byte GpioByte)
         {
             try
@@ -421,6 +465,10 @@ namespace Plugins.UARTReplacement
             }
         }
 
+        /// <summary>
+        /// Returns true if serial port is enabled.
+        /// If any errors occurred at startup opening the port, this will return false.
+        /// </summary>
         public bool IsEnabled
         {
             get
@@ -476,8 +524,64 @@ namespace Plugins.UARTReplacement
             }
         }
 
+        /// <summary>
+        /// Get string representation of the top three bits of a byte.
+        /// </summary>
+        /// <param name="value">A value in 0xbNNN format.</param>
+        /// <returns></returns>
+        private string ToBin3(byte value)
+        {
+            string val = Convert.ToString(value, 2).PadLeft(8, '0').ToLower();
+            return "0b" + val.Substring(5);
+        }
+
+        /// <summary>
+        /// Returns true if CSpect and the plugin are running inside Mono instead of the .NET 4.x Framework.
+        /// This will return true for linux and MacOS.
+        /// It can also return true on Windows if you install Mono from https://www.mono-project.com/download/stable/#download-win
+        /// and start CSpect with: mono CSpect.exe
+        /// </summary>
+        /// <returns>True if CSpect and the plugin are running inside Mono</returns>
+        private static bool IsRunningOnMono()
+        {
+            return Type.GetType("Mono.Runtime") != null;
+        }
+
+        /// <summary>
+        /// When running on mono, continuously invoke the plugin's callback handler
+        /// for data received events.
+        /// </summary>
+        private void ReadThread()
+        {
+            try
+            {
+                while (true)
+                {
+                    handler.Invoke(port, null);
+                    // Don't sleep here, it will throttle the receive rate.
+                    // Yield will prevent 100% CPU.
+                    Thread.Yield();
+                }
+            }
+            catch (ThreadInterruptedException)
+            {
+                // Normal at dispose
+            }
+            catch (Exception ex)
+            {
+                // Normal at dispose
+                if (!isDisposing)
+                {
+                    // Still throw any other exception if we're not disposing.
+                    Console.Error.Write(UARTReplacement_Device.PluginName);
+                    Console.Error.WriteLine(ex.ToString());
+                }
+            }
+        }
+
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
+        private bool isDisposing = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {
@@ -486,6 +590,8 @@ namespace Plugins.UARTReplacement
                 if (disposing)
                 {
                     // Dispose managed state (managed objects).
+                    isDisposing = disposing;
+                    readThread?.Interrupt();
                     if (port != null)
                     {
                         if (port.IsOpen)
