@@ -25,16 +25,19 @@ namespace Plugins.UARTReplacement
         private byte prescalerTop3Bits = 0x00;
         private System.IO.Ports.SerialDataReceivedEventHandler handler;
         private Thread readThread;
+        private Settings _settings;
 
         /// <summary>
         /// Creates an instance of the SerialPort class.
         /// </summary>
         /// <param name="PortName">The serial port name to bind to, for example COM1.</param>
-        public SerialPort(string PortName, UARTTargets Target, System.IO.Ports.SerialDataReceivedEventHandler dataReceivedHandler)
+        public SerialPort(string PortName, UARTTargets Target, Settings settings, 
+            System.IO.Ports.SerialDataReceivedEventHandler dataReceivedHandler)
         {
             try
             {
                 target = Target;
+                _settings = settings;
                 handler = dataReceivedHandler;
                 logPrefix = target.ToString().Substring(0, 1) + "." + (PortName ?? "").Trim() + ".";
                 if (string.IsNullOrWhiteSpace(PortName))
@@ -47,14 +50,15 @@ namespace Plugins.UARTReplacement
                 port = new System.IO.Ports.SerialPort();
                 int oldBaud = -1;
                 port.PortName = PortName;
-                int baud = Baud;
-                port.BaudRate = baud > 0 ? baud : 115200;
+                int desiredBaud = Baud > 0 ? Baud : 115200;
+                int actualBaud = settings.GetBaud(desiredBaud, target);
+                port.BaudRate = actualBaud;
                 port.Parity = System.IO.Ports.Parity.None;
                 port.DataBits = 8;
                 port.StopBits = System.IO.Ports.StopBits.One;
                 port.Handshake = System.IO.Ports.Handshake.None;
-                LogClock(oldBaud, baud, false);
-                LogPrescaler(oldBaud, baud, "");
+                LogClock(oldBaud, actualBaud, desiredBaud, false);
+                LogPrescaler(oldBaud, actualBaud, desiredBaud, "");
                 if (dataReceivedHandler != null)
                 {
                     if (IsRunningOnMono())
@@ -199,14 +203,18 @@ namespace Plugins.UARTReplacement
                     int oldBits = prescaler & 0x3fff;
                     // Combine the two sets of bits
                     prescaler = oldBits | newBits;
-                    port.BaudRate = Baud;
-                    LogClock(oldBaud, Baud, false);
-                    LogPrescaler(oldBaud, Baud, "16:14");
+                    int desiredBaud = Baud > 0 ? Baud : 115200;
+                    int actualBaud = _settings.GetBaud(desiredBaud, target);
+                    port.BaudRate = actualBaud;
+                    LogClock(oldBaud, actualBaud, desiredBaud, false);
+                    LogPrescaler(oldBaud, actualBaud, desiredBaud, "16:14");
                 }
                 else
                 {
-                    port.BaudRate = Baud;
-                    LogClock(oldBaud, Baud);
+                    int desiredBaud = Baud > 0 ? Baud : 115200;
+                    int actualBaud = _settings.GetBaud(desiredBaud, target);
+                    port.BaudRate = actualBaud;
+                    LogClock(oldBaud, actualBaud, desiredBaud);
                 }
                 return clock;
             }
@@ -239,8 +247,10 @@ namespace Plugins.UARTReplacement
                     int oldBits = prescaler & 0x1ff80;
                     // Combine the two sets of bits
                     prescaler = oldBits | newBits;
-                    port.BaudRate = Baud == 1928571 ? 2000000 : Baud;
-                    LogPrescaler(oldBaud, Baud, "6:0");
+                    int desiredBaud = Baud > 0 ? Baud : 115200;
+                    int actualBaud = _settings.GetBaud(desiredBaud, target);
+                    port.BaudRate = actualBaud;
+                    LogPrescaler(oldBaud, actualBaud, desiredBaud, "6:0");
                 }
                 else
                 {
@@ -250,8 +260,10 @@ namespace Plugins.UARTReplacement
                     int oldBits = prescaler & 0x1c07f;
                     // Combine the two sets of bits
                     prescaler = oldBits | newBits;
-                    port.BaudRate = Baud == 1928571 ? 2000000 : Baud;
-                    LogPrescaler(oldBaud, Baud, "13:7");
+                    int desiredBaud = Baud > 0 ? Baud : 115200;
+                    int actualBaud = _settings.GetBaud(desiredBaud, target);
+                    port.BaudRate = actualBaud;
+                    LogPrescaler(oldBaud, actualBaud, desiredBaud, "13:7");
                     return Baud;
                 }
                 return Baud;
@@ -484,15 +496,18 @@ namespace Plugins.UARTReplacement
         /// Optionally choose not to log the calculated baud, if you know the prescaler is about to be changed
         /// and logged straight afterwareds.
         /// </param>
-        private void LogClock(int oldBaud, int newBaud, bool LogBaud = true)
+        private void LogClock(int oldBaud, int newBaud, int SubstitutedFrom, bool LogBaud = true)
         {
             try
             {
                 if (port == null)
                     return;
                 //Console.WriteLine(UARTReplacement_Device.PluginName + "Clock=" + clock);
-                if (LogBaud && newBaud != oldBaud)
-                    Console.WriteLine(UARTReplacement_Device.PluginName + "Setting " + target.ToString() + " baud to " + Baud);
+                if (LogBaud && SubstitutedFrom != oldBaud)
+                {
+                    string sub = newBaud == SubstitutedFrom ? "" : $" (substituted from {SubstitutedFrom})";
+                    Console.WriteLine($"{UARTReplacement_Device.PluginName}Setting{target.ToString()}baud to {newBaud}{sub}");
+                }
             }
             catch (Exception ex)
             {
@@ -505,7 +520,7 @@ namespace Plugins.UARTReplacement
         /// Convenience method to log the prescaler and calculated baud to the debug console, every time the prescaler changes.
         /// </summary>
         /// <param name="BitsChanged"></param>
-        private void LogPrescaler(int oldBaud, int newBaud, string BitsChanged)
+        private void LogPrescaler(int oldBaud, int newBaud, int SubstitutedFrom, string BitsChanged)
         {
             try
             {
@@ -514,8 +529,11 @@ namespace Plugins.UARTReplacement
                 string bstr = Convert.ToString(prescaler, 2).PadLeft(17, '0');
                 //Console.WriteLine(UARTReplacement_Device.PluginName + "Prescaler=" + bstr.Substring(0, 3) + " " + bstr.Substring(3, 7) + " " + bstr.Substring(10, 7)
                 //    + " (" + prescaler + (string.IsNullOrWhiteSpace(BitsChanged) ? "" : ", changed bits " + BitsChanged) + ")");
-                if (newBaud != oldBaud)
-                    Console.WriteLine(UARTReplacement_Device.PluginName + "Setting " + target.ToString() + " baud to " + Baud);
+                if (SubstitutedFrom != oldBaud)
+                {
+                    string sub = newBaud == SubstitutedFrom ? "" : $" (substituted from {SubstitutedFrom})";
+                    Console.WriteLine($"{UARTReplacement_Device.PluginName}Setting {target.ToString()} baud to {newBaud}{sub}");
+                }
             }
             catch (Exception ex)
             {

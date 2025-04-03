@@ -49,11 +49,11 @@ namespace Plugins.UARTReplacement
                 piSync = new object();
                 CSpect = _CSpect;
                 Target = UARTTargets.ESP;
-                settings = Settings.Load();
+                settings = Settings.Load().RemoveInvalidSubstitutions();
                 espBuffer = new Buffer(settings.EspPortName, UARTTargets.ESP);
                 piBuffer = new Buffer(settings.PiPortName, UARTTargets.Pi);
-                espPort = new SerialPort(settings.EspPortName, UARTTargets.ESP, Esp_DataReceived);
-                piPort = new SerialPort(settings.PiPortName, UARTTargets.Pi, Pi_DataReceived);
+                espPort = new SerialPort(settings.EspPortName,  UARTTargets.ESP, settings, Esp_DataReceived);
+                piPort = new SerialPort(settings.PiPortName, UARTTargets.Pi, settings, Pi_DataReceived);
                 UART_RX_Internal = false;
                 UART_TX_Internal = false;
 
