@@ -33,7 +33,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == '2_19_4_4|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\..\spec\CSpect3_0_15_2\</OutputPath>
+    <OutputPath>..\..\..\spec\CSpect2_19_4_4\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -42,7 +42,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == '3_0_1_0|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\3_0_1_0\</OutputPath>
+    <OutputPath>..\..\..\spec\CSpect3_0_1_0\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
