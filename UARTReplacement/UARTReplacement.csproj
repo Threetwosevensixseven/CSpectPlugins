@@ -51,6 +51,15 @@
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == '3_0_15_2|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\..\spec\CSpect3_0_15_2\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Plugin, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" Condition="'$(Configuration)|$(Platform)' == '2_19_4_4|AnyCPU'">
       <SpecificVersion>False</SpecificVersion>
@@ -59,6 +68,10 @@
     <Reference Include="Plugin, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" Condition="'$(Configuration)|$(Platform)' == '3_0_1_0|AnyCPU'">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Common\3_0_1_0\Plugin.dll</HintPath>
+    </Reference>
+    <Reference Include="Plugin, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" Condition="'$(Configuration)|$(Platform)' == '3_0_15_2|AnyCPU'">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Common\3_0_15_2\Plugin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
